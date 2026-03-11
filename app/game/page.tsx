@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -12,7 +12,7 @@ import { CardTransferModal } from "@/components/game/CardTransferModal";
 import { GameOverModal } from "@/components/game/GameOverModal";
 import { ToastContainer } from "@/components/game/Toast";
 
-export default function GamePage() {
+function GamePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const mode = searchParams.get("mode") as "easy" | "hard" || "easy";
@@ -394,5 +394,20 @@ export default function GamePage() {
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
+  );
+}
+
+export default function GamePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Loading game...</p>
+        </div>
+      </div>
+    }>
+      <GamePageContent />
+    </Suspense>
   );
 }

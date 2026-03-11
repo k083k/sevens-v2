@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Trophy, Medal, Home, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
+import { IPlayer } from "@/lib/game/types/types";
 
 interface GameOverModalProps {
   visible: boolean;
-  rankings: string[];
-  players: Array<{ name: string; id: string }>;
+  rankings: ReadonlyArray<string> | string[];
+  players: ReadonlyArray<IPlayer> | IPlayer[];
   onPlayAgain: () => void;
   onBackToMenu: () => void;
 }

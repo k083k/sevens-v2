@@ -1,12 +1,12 @@
 import { Card } from "./Card";
-import { Suit } from "@/lib/game/types/types";
+import { Suit, ICard } from "@/lib/game/types/types";
 import { ArrowRight } from "lucide-react";
 
 interface CardTransferModalProps {
   visible: boolean;
   fromPlayerName: string;
   toPlayerName: string;
-  availableCards: any[];
+  availableCards: ReadonlyArray<ICard> | ICard[];
   onSelectCard: (card: any) => void;
 }
 
