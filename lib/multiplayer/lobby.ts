@@ -266,7 +266,7 @@ export async function startGame(gameId: string, hostPlayerId: string) {
     .eq('player_id', hostPlayerId)
     .single()
 
-  if (!player?.is_host) {
+  if (!(player as any)?.is_host) {
     return { success: false, error: 'Only the host can start the game' }
   }
 
@@ -308,7 +308,7 @@ export async function cancelGame(gameId: string, hostPlayerId: string) {
     .eq('player_id', hostPlayerId)
     .single()
 
-  if (!player?.is_host) {
+  if (!(player as any)?.is_host) {
     return { success: false, error: 'Only the host can cancel the game' }
   }
 
