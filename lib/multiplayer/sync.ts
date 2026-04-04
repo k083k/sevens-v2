@@ -277,12 +277,14 @@ export async function getMoveHistory(gameId: string) {
  */
 export async function finishGame(gameId: string) {
   try {
+    const updateData: any = {
+      status: 'finished',
+      finished_at: new Date().toISOString(),
+    }
+
     const { error } = await supabase
       .from('games')
-      .update({
-        status: 'finished',
-        finished_at: new Date().toISOString(),
-      } as any)
+      .update(updateData)
       .eq('id', gameId)
 
     if (error) {

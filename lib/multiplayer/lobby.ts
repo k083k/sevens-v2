@@ -281,12 +281,14 @@ export async function startGame(gameId: string, hostPlayerId: string) {
   }
 
   // Update game status
+  const updateData: any = {
+    status: 'playing' as GameStatus,
+    started_at: new Date().toISOString(),
+  }
+
   const { error } = await supabase
     .from('games')
-    .update({
-      status: 'playing' as GameStatus,
-      started_at: new Date().toISOString(),
-    } as any)
+    .update(updateData)
     .eq('id', gameId)
 
   if (error) {
@@ -313,12 +315,14 @@ export async function cancelGame(gameId: string, hostPlayerId: string) {
   }
 
   // Update game status to cancelled
+  const updateData: any = {
+    status: 'cancelled' as GameStatus,
+    finished_at: new Date().toISOString(),
+  }
+
   const { error } = await supabase
     .from('games')
-    .update({
-      status: 'cancelled' as GameStatus,
-      finished_at: new Date().toISOString(),
-    } as any)
+    .update(updateData)
     .eq('id', gameId)
 
   if (error) {
