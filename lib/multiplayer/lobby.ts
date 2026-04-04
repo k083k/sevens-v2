@@ -70,15 +70,15 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
     const hostPlayerId = crypto.randomUUID()
 
     // Create game record
-    const { data: game, error: gameError } = await supabase
-      .from('games')
+    const { data: game, error: gameError } = await (supabase
+      .from('games') as any)
       .insert({
         code: gameCode,
         host_id: hostPlayerId,
         status: 'waiting' as GameStatus,
         mode: mode as GameModeDb,
         max_players: maxPlayers,
-      } as any)
+      })
       .select()
       .single()
 
@@ -88,8 +88,8 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
     }
 
     // Add host as first player
-    const { error: playerError } = await supabase
-      .from('game_players')
+    const { error: playerError } = await (supabase
+      .from('game_players') as any)
       .insert({
         game_id: (game as any).id,
         player_id: hostPlayerId,
@@ -97,12 +97,12 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
         seat_position: 0,
         is_host: true,
         connected: true,
-      } as any)
+      })
 
     if (playerError) {
       console.error('Error adding host player:', playerError)
       // Clean up game if player creation failed
-      await supabase.from('games').delete().eq('id', (game as any).id)
+      await (supabase.from('games') as any).delete().eq('id', (game as any).id)
       return { success: false, error: playerError.message }
     }
 
@@ -172,8 +172,8 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     const playerId = crypto.randomUUID()
 
     // Add player to game
-    const { error: insertError } = await supabase
-      .from('game_players')
+    const { error: insertError } = await (supabase
+      .from('game_players') as any)
       .insert({
         game_id: (game as any).id,
         player_id: playerId,
@@ -181,7 +181,7 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
         seat_position: seatPosition,
         is_host: false,
         connected: true,
-      } as any)
+      })
 
     if (insertError) {
       console.error('Error joining game:', insertError)
@@ -240,8 +240,8 @@ export async function getGamePlayers(gameId: string) {
  * Leave a game
  */
 export async function leaveGame(gameId: string, playerId: string) {
-  const { error } = await supabase
-    .from('game_players')
+  const { error } = await (supabase
+    .from('game_players') as any)
     .delete()
     .eq('game_id', gameId)
     .eq('player_id', playerId)
@@ -281,14 +281,12 @@ export async function startGame(gameId: string, hostPlayerId: string) {
   }
 
   // Update game status
-  const updateData: any = {
-    status: 'playing' as GameStatus,
-    started_at: new Date().toISOString(),
-  }
-
-  const { error } = await supabase
-    .from('games')
-    .update(updateData)
+  const { error } = await (supabase
+    .from('games') as any)
+    .update({
+      status: 'playing' as GameStatus,
+      started_at: new Date().toISOString(),
+    })
     .eq('id', gameId)
 
   if (error) {
@@ -315,14 +313,12 @@ export async function cancelGame(gameId: string, hostPlayerId: string) {
   }
 
   // Update game status to cancelled
-  const updateData: any = {
-    status: 'cancelled' as GameStatus,
-    finished_at: new Date().toISOString(),
-  }
-
-  const { error } = await supabase
-    .from('games')
-    .update(updateData)
+  const { error } = await (supabase
+    .from('games') as any)
+    .update({
+      status: 'cancelled' as GameStatus,
+      finished_at: new Date().toISOString(),
+    })
     .eq('id', gameId)
 
   if (error) {

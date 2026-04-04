@@ -84,13 +84,13 @@ export async function saveGameState(
   try {
     const serialized = serializeGameState(state, currentPlayerId)
 
-    const { error } = await supabase
-      .from('game_state')
+    const { error } = await (supabase
+      .from('game_state') as any)
       .upsert({
         game_id: gameId,
-        state: serialized as any,
+        state: serialized,
         updated_at: new Date().toISOString(),
-      } as any)
+      })
 
     if (error) {
       console.error('Error saving game state:', error)
@@ -143,12 +143,12 @@ export async function recordMove(
   moveData: any
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase.from('game_moves').insert({
+    const { error } = await (supabase.from('game_moves') as any).insert({
       game_id: gameId,
       player_id: playerId,
       move_type: moveType,
       move_data: moveData,
-    } as any)
+    })
 
     if (error) {
       console.error('Error recording move:', error)
@@ -223,11 +223,11 @@ export async function initializeGameState(
     console.log('Serialized state:', JSON.stringify(serialized).substring(0, 200))
 
     // Use UPSERT instead of INSERT to avoid duplicate key errors
-    const { data, error } = await supabase.from('game_state').upsert({
+    const { data, error } = await (supabase.from('game_state') as any).upsert({
       game_id: gameId,
-      state: serialized as any,
+      state: serialized,
       updated_at: new Date().toISOString(),
-    } as any, {
+    }, {
       onConflict: 'game_id' // Update if game_id already exists
     }).select()
 
@@ -277,14 +277,12 @@ export async function getMoveHistory(gameId: string) {
  */
 export async function finishGame(gameId: string) {
   try {
-    const updateData: any = {
-      status: 'finished',
-      finished_at: new Date().toISOString(),
-    }
-
-    const { error } = await supabase
-      .from('games')
-      .update(updateData)
+    const { error } = await (supabase
+      .from('games') as any)
+      .update({
+        status: 'finished',
+        finished_at: new Date().toISOString(),
+      })
       .eq('id', gameId)
 
     if (error) {
