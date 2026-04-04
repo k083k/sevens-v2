@@ -223,7 +223,7 @@ export default function SetupPage() {
             <Button
               size="lg"
               onClick={handleStartGame}
-              className="w-full text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent"
+              className="w-full text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
             >
               {playMode === "single" ? "Start Game" : "Continue to Multiplayer"}
             </Button>
