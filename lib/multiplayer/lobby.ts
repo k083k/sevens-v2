@@ -132,8 +132,8 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     }
 
     // Find game by code
-    const { data: game, error: gameError } = await supabase
-      .from('games')
+    const { data: game, error: gameError } = await (supabase
+      .from('games') as any)
       .select('*')
       .eq('code', normalizedCode)
       .single()
@@ -148,8 +148,8 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     }
 
     // Check player count
-    const { data: existingPlayers, error: playersError } = await supabase
-      .from('game_players')
+    const { data: existingPlayers, error: playersError } = await (supabase
+      .from('game_players') as any)
       .select('*')
       .eq('game_id', (game as any).id)
 
@@ -205,8 +205,8 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
 export async function getGameByCode(gameCode: string) {
   const normalizedCode = normalizeGameCode(gameCode)
 
-  const { data: game, error } = await supabase
-    .from('games')
+  const { data: game, error } = await (supabase
+    .from('games') as any)
     .select('*')
     .eq('code', normalizedCode)
     .single()
@@ -222,8 +222,8 @@ export async function getGameByCode(gameCode: string) {
  * Get players in a game
  */
 export async function getGamePlayers(gameId: string) {
-  const { data: players, error } = await supabase
-    .from('game_players')
+  const { data: players, error } = await (supabase
+    .from('game_players') as any)
     .select('*')
     .eq('game_id', gameId)
     .order('seat_position')
@@ -259,8 +259,8 @@ export async function leaveGame(gameId: string, playerId: string) {
  */
 export async function startGame(gameId: string, hostPlayerId: string) {
   // Verify host
-  const { data: player } = await supabase
-    .from('game_players')
+  const { data: player } = await (supabase
+    .from('game_players') as any)
     .select('is_host')
     .eq('game_id', gameId)
     .eq('player_id', hostPlayerId)
@@ -271,8 +271,8 @@ export async function startGame(gameId: string, hostPlayerId: string) {
   }
 
   // Check player count (need at least 2)
-  const { data: players } = await supabase
-    .from('game_players')
+  const { data: players } = await (supabase
+    .from('game_players') as any)
     .select('*')
     .eq('game_id', gameId)
 
@@ -301,8 +301,8 @@ export async function startGame(gameId: string, hostPlayerId: string) {
  */
 export async function cancelGame(gameId: string, hostPlayerId: string) {
   // Verify host
-  const { data: player } = await supabase
-    .from('game_players')
+  const { data: player } = await (supabase
+    .from('game_players') as any)
     .select('is_host')
     .eq('game_id', gameId)
     .eq('player_id', hostPlayerId)

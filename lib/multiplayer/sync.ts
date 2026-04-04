@@ -111,8 +111,8 @@ export async function loadGameState(
   gameId: string
 ): Promise<{ success: boolean; state?: SerializableGameState; error?: string }> {
   try {
-    const { data, error } = await supabase
-      .from('game_state')
+    const { data, error } = await (supabase
+      .from('game_state') as any)
       .select('state')
       .eq('game_id', gameId)
       .single()
@@ -126,7 +126,7 @@ export async function loadGameState(
       return { success: false, error: 'Game state not found' }
     }
 
-    return { success: true, state: data.state as SerializableGameState }
+    return { success: true, state: (data as any).state as SerializableGameState }
   } catch (error: any) {
     console.error('Error loading game state:', error)
     return { success: false, error: error.message }
@@ -254,8 +254,8 @@ export async function initializeGameState(
  */
 export async function getMoveHistory(gameId: string) {
   try {
-    const { data, error } = await supabase
-      .from('game_moves')
+    const { data, error } = await (supabase
+      .from('game_moves') as any)
       .select('*')
       .eq('game_id', gameId)
       .order('created_at', { ascending: true })
