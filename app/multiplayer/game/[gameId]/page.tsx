@@ -57,10 +57,10 @@ export default function MultiplayerGamePage() {
           .select("is_host")
           .eq("game_id", gameId)
           .eq("player_id", storedPlayerId)
-          .single();
+          .maybeSingle();
 
         if (playerData) {
-          setIsHost(playerData.is_host as boolean);
+          setIsHost(Boolean(playerData.is_host));
         }
 
         await initializeMultiplayerGame(
