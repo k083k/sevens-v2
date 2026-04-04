@@ -78,7 +78,7 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
         status: 'waiting' as GameStatus,
         mode: mode as GameModeDb,
         max_players: maxPlayers,
-      })
+      } as any)
       .select()
       .single()
 
@@ -97,7 +97,7 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
         seat_position: 0,
         is_host: true,
         connected: true,
-      })
+      } as any)
 
     if (playerError) {
       console.error('Error adding host player:', playerError)
@@ -181,7 +181,7 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
         seat_position: seatPosition,
         is_host: false,
         connected: true,
-      })
+      } as any)
 
     if (insertError) {
       console.error('Error joining game:', insertError)
@@ -286,7 +286,7 @@ export async function startGame(gameId: string, hostPlayerId: string) {
     .update({
       status: 'playing' as GameStatus,
       started_at: new Date().toISOString(),
-    })
+    } as any)
     .eq('id', gameId)
 
   if (error) {
@@ -318,7 +318,7 @@ export async function cancelGame(gameId: string, hostPlayerId: string) {
     .update({
       status: 'cancelled' as GameStatus,
       finished_at: new Date().toISOString(),
-    })
+    } as any)
     .eq('id', gameId)
 
   if (error) {

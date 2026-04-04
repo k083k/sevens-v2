@@ -90,7 +90,7 @@ export async function saveGameState(
         game_id: gameId,
         state: serialized as any,
         updated_at: new Date().toISOString(),
-      })
+      } as any)
 
     if (error) {
       console.error('Error saving game state:', error)
@@ -148,7 +148,7 @@ export async function recordMove(
       player_id: playerId,
       move_type: moveType,
       move_data: moveData,
-    })
+    } as any)
 
     if (error) {
       console.error('Error recording move:', error)
@@ -227,7 +227,7 @@ export async function initializeGameState(
       game_id: gameId,
       state: serialized as any,
       updated_at: new Date().toISOString(),
-    }, {
+    } as any, {
       onConflict: 'game_id' // Update if game_id already exists
     }).select()
 
@@ -282,7 +282,7 @@ export async function finishGame(gameId: string) {
       .update({
         status: 'finished',
         finished_at: new Date().toISOString(),
-      })
+      } as any)
       .eq('id', gameId)
 
     if (error) {
