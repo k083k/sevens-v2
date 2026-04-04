@@ -316,7 +316,7 @@ export default function LobbyPage() {
                 size="lg"
                 onClick={handleStartGame}
                 disabled={players.length < 2 || isStarting}
-                className="w-full text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                className="w-full text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300 bg-teal-600 hover:bg-teal-700"
               >
                 {isStarting ? (
                   <>
