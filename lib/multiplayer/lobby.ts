@@ -162,7 +162,7 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     }
 
     // Find available seat position
-    const takenSeats = new Set(existingPlayers.map((p) => p.seat_position))
+    const takenSeats = new Set(existingPlayers.map((p: any) => p.seat_position))
     let seatPosition = 0
     while (takenSeats.has(seatPosition) && seatPosition < 4) {
       seatPosition++
