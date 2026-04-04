@@ -52,15 +52,15 @@ export default function MultiplayerGamePage() {
     const init = async () => {
       try {
         // Check if this player is host
-        const { data: playerData } = await supabase
+        const result = await supabase
           .from("game_players")
           .select("is_host")
           .eq("game_id", gameId)
           .eq("player_id", storedPlayerId)
           .maybeSingle();
 
-        if (playerData) {
-          setIsHost(Boolean(playerData.is_host));
+        if (result.data) {
+          setIsHost(Boolean((result.data as any).is_host));
         }
 
         await initializeMultiplayerGame(
