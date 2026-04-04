@@ -4,15 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, Zap, Target } from "lucide-react";
+import { ArrowLeft, Users, Zap, Target, Wifi, WifiOff } from "lucide-react";
 import Link from "next/link";
 
 export default function SetupPage() {
+  const [playMode, setPlayMode] = useState<"single" | "multi">("single");
   const [gameMode, setGameMode] = useState<"easy" | "hard">("easy");
   const router = useRouter();
 
   const handleStartGame = () => {
-    router.push(`/game?mode=${gameMode}`);
+    if (playMode === "single") {
+      router.push(`/game?mode=${gameMode}`);
+    } else {
+      // Route to multiplayer options
+      router.push(`/multiplayer/setup?mode=${gameMode}`);
+    }
   };
 
   return (
@@ -47,7 +53,7 @@ export default function SetupPage() {
             </p>
           </div>
 
-          {/* Players info */}
+          {/* Play Mode Selection */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -55,18 +61,75 @@ export default function SetupPage() {
             className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-                Players
+                Play Mode
               </h2>
             </div>
-            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
-              <span className="text-slate-700 dark:text-slate-300">You vs AI Opponent</span>
-              <span className="px-3 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">
-                2 Players
-              </span>
+            <div className="space-y-3">
+              {/* Single Player */}
+              <button
+                onClick={() => setPlayMode("single")}
+                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                  playMode === "single"
+                    ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
+                    : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <WifiOff className={`h-5 w-5 ${playMode === "single" ? "text-purple-600" : "text-slate-400"}`} />
+                    <div>
+                      <h3 className={`font-semibold ${playMode === "single" ? "text-purple-900 dark:text-purple-100" : "text-slate-900 dark:text-white"}`}>
+                        Single Player
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Play against AI opponent
+                      </p>
+                    </div>
+                  </div>
+                  {playMode === "single" && (
+                    <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 12 12">
+                        <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* Multiplayer */}
+              <button
+                onClick={() => setPlayMode("multi")}
+                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                  playMode === "multi"
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30"
+                    : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Wifi className={`h-5 w-5 ${playMode === "multi" ? "text-orange-600" : "text-slate-400"}`} />
+                    <div>
+                      <h3 className={`font-semibold ${playMode === "multi" ? "text-orange-900 dark:text-orange-100" : "text-slate-900 dark:text-white"}`}>
+                        Multiplayer
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Play with friends (2-4 players)
+                      </p>
+                    </div>
+                  </div>
+                  {playMode === "multi" && (
+                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 12 12">
+                        <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
             </div>
           </motion.div>
 
@@ -162,7 +225,7 @@ export default function SetupPage() {
               onClick={handleStartGame}
               className="w-full text-lg py-6 shadow-xl hover:shadow-2xl transition-all duration-300"
             >
-              Start Game
+              {playMode === "single" ? "Start Game" : "Continue to Multiplayer"}
             </Button>
           </motion.div>
         </motion.div>

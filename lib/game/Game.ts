@@ -50,7 +50,7 @@ export class Game {
    * Initialize a new game with players
    */
   public initializeGame(
-    playerConfigs: Array<{ name: string; type: PlayerType }>,
+    playerConfigs: Array<{ name: string; type: PlayerType; id?: string }>,
     gameMode: GameMode = GameMode.EASY
   ): void {
     if (playerConfigs.length < 2 || playerConfigs.length > 4) {
@@ -67,7 +67,8 @@ export class Game {
     const seatPositions = this.shuffleArray([0, 1, 2, 3].slice(0, playerConfigs.length));
 
     this.players = playerConfigs.map((config, index) => {
-      const playerId = `player-${index}`;
+      // Use provided ID for multiplayer, or generate for single-player
+      const playerId = config.id || `player-${index}`;
       const seatPosition = seatPositions[index];
 
       switch (config.type) {
@@ -283,6 +284,29 @@ export class Game {
         throw new Error('Could not find next player in turn order');
       }
     } while (!this.turnOrder.includes(nextPlayerId));
+  }
+
+  /**
+   * Restore game state from serialized data (for multiplayer sync)
+   */
+  public restoreState(serializedState: any): void {
+    // Restore board state
+    this.board.restoreState(serializedState.board);
+
+    // Restore game phase
+    this.gamePhase = serializedState.gamePhase;
+
+    // Restore current player index
+    this.currentPlayerIndex = serializedState.currentPlayerIndex;
+
+    // Restore turn order
+    this.turnOrder = [...serializedState.turnOrder];
+
+    // Restore rankings
+    this.rankings = [...serializedState.rankings];
+
+    // Restore pending card transfer
+    this.pendingCardTransfer = serializedState.pendingCardTransfer;
   }
 
   /**

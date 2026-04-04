@@ -119,6 +119,18 @@ export class Board {
   }
 
   /**
+   * Restore board state from serialized data (for multiplayer sync)
+   */
+  public restoreState(boardState: BoardState): void {
+    this.state = {
+      [Suit.SPADES]: { ...boardState[Suit.SPADES] },
+      [Suit.HEARTS]: { ...boardState[Suit.HEARTS] },
+      [Suit.DIAMONDS]: { ...boardState[Suit.DIAMONDS] },
+      [Suit.CLUBS]: { ...boardState[Suit.CLUBS] },
+    };
+  }
+
+  /**
    * Reset the board to initial state
    */
   public reset(): void {
