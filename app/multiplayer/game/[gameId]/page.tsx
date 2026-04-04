@@ -60,7 +60,7 @@ export default function MultiplayerGamePage() {
           .single();
 
         if (playerData) {
-          setIsHost(playerData.is_host);
+          setIsHost(playerData.is_host as boolean);
         }
 
         await initializeMultiplayerGame(
