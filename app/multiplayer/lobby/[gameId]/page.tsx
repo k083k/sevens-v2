@@ -72,7 +72,7 @@ export default function LobbyPage() {
       // Check if current user is host
       const currentPlayer = playersList.find((p: Player) => p.player_id === sessionStorage.getItem("playerId"));
       if (currentPlayer) {
-        setIsHost(currentPlayer.is_host);
+        setIsHost(Boolean((currentPlayer as any).is_host));
       }
 
       setLoading(false);
