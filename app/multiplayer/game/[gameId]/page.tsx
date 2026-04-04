@@ -360,29 +360,24 @@ export default function MultiplayerGamePage() {
       {/* Card Transfer Modal */}
       {gameState.pendingCardTransfer && gameState.pendingCardTransfer.from === playerId && (
         <CardTransferModal
-          isOpen={true}
-          onClose={() => {}}
-          onCardSelected={handleCardTransfer}
-          availableCards={myHand}
-          recipientName={
+          visible={true}
+          fromPlayerName={myPlayer?.name || "You"}
+          toPlayerName={
             gameState.players.find((p) => p.id === gameState.pendingCardTransfer!.to)?.name || "Player"
           }
+          availableCards={myHand}
+          onSelectCard={handleCardTransfer}
         />
       )}
 
       {/* Game Over Modal */}
       {gameState.gamePhase === "finished" && (
         <GameOverModal
-          isOpen={true}
-          onClose={() => router.push("/")}
+          visible={true}
+          rankings={gameState.rankings}
+          players={gameState.players}
           onPlayAgain={() => router.push("/setup")}
-          rankings={gameState.rankings.map((id) => {
-            const player = gameState.players.find((p) => p.id === id);
-            return {
-              name: player?.name || "Unknown",
-              position: player?.finishPosition || 0,
-            };
-          })}
+          onBackToMenu={() => router.push("/")}
         />
       )}
 
