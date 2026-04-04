@@ -91,7 +91,7 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
     const { error: playerError } = await supabase
       .from('game_players')
       .insert({
-        game_id: game.id,
+        game_id: (game as any).id,
         player_id: hostPlayerId,
         player_name: hostName,
         seat_position: 0,
@@ -102,13 +102,13 @@ export async function createGame(options: CreateGameOptions): Promise<CreateGame
     if (playerError) {
       console.error('Error adding host player:', playerError)
       // Clean up game if player creation failed
-      await supabase.from('games').delete().eq('id', game.id)
+      await supabase.from('games').delete().eq('id', (game as any).id)
       return { success: false, error: playerError.message }
     }
 
     return {
       success: true,
-      gameId: game.id,
+      gameId: (game as any).id,
       gameCode: gameCode,
       playerId: hostPlayerId,
     }
@@ -143,7 +143,7 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     }
 
     // Check game status
-    if (game.status !== 'waiting') {
+    if ((game as any).status !== 'waiting') {
       return { success: false, error: 'Game has already started or ended' }
     }
 
@@ -151,13 +151,13 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     const { data: existingPlayers, error: playersError } = await supabase
       .from('game_players')
       .select('*')
-      .eq('game_id', game.id)
+      .eq('game_id', (game as any).id)
 
     if (playersError) {
       return { success: false, error: 'Failed to check player count' }
     }
 
-    if (existingPlayers.length >= game.max_players) {
+    if (existingPlayers.length >= (game as any).max_players) {
       return { success: false, error: 'Game is full' }
     }
 
@@ -175,7 +175,7 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
     const { error: insertError } = await supabase
       .from('game_players')
       .insert({
-        game_id: game.id,
+        game_id: (game as any).id,
         player_id: playerId,
         player_name: playerName,
         seat_position: seatPosition,
@@ -190,7 +190,7 @@ export async function joinGame(options: JoinGameOptions): Promise<JoinGameResult
 
     return {
       success: true,
-      gameId: game.id,
+      gameId: (game as any).id,
       playerId: playerId,
     }
   } catch (error: any) {
