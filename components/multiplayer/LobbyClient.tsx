@@ -137,11 +137,11 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-600/10 dark:to-teal-700/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-400/20 to-cyan-500/20 dark:from-blue-600/10 dark:to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-600/10 to-teal-700/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
 
       {/* Back button */}
@@ -160,10 +160,10 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
           className="flex flex-col items-center gap-8 w-full"
         >
           <div className="text-center space-y-2">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent">
               Game Lobby
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
+            <p className="text-lg text-slate-400">
               Waiting for players to join...
             </p>
           </div>
@@ -173,24 +173,24 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
             <div className="text-center">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+              <p className="text-sm text-slate-400 mb-2">
                 Share this code with your friends:
               </p>
               <div className="flex items-center justify-center gap-3">
-                <div className="text-5xl font-bold font-mono tracking-wider text-emerald-600 dark:text-emerald-400">
+                <div className="text-5xl font-bold font-mono tracking-wider text-emerald-400">
                   {formatGameCode(game.code)}
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleCopyCode}
-                  className="hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                  className="hover:bg-emerald-900/30 text-slate-400 hover:text-emerald-400"
                 >
                   {copied ? (
-                    <Check className="h-5 w-5 text-emerald-600" />
+                    <Check className="h-5 w-5 text-emerald-400" />
                   ) : (
                     <Copy className="h-5 w-5" />
                   )}
@@ -204,13 +204,13 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-blue-500/10 rounded-lg">
-                <UsersIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <UsersIcon className="h-5 w-5 text-blue-400" />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-white">
                 Players ({players.length}/{game.max_players})
               </h2>
             </div>
@@ -221,19 +221,19 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 * index }}
-                  className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4"
+                  className="flex items-center justify-between bg-slate-800/50 rounded-lg p-4"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold">
                       {player.player_name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-medium text-slate-900 dark:text-white">
+                    <span className="font-medium text-white">
                       {player.player_name}
                       {player.player_id === playerId && " (You)"}
                     </span>
                   </div>
                   {player.is_host && (
-                    <div className="flex items-center gap-1 px-3 py-1 bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
+                    <div className="flex items-center gap-1 px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-medium">
                       <Crown className="h-4 w-4" />
                       Host
                     </div>
@@ -248,11 +248,11 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600 dark:text-slate-400">Game Mode:</span>
-              <span className="font-medium text-slate-900 dark:text-white">
+              <span className="text-slate-400">Game Mode:</span>
+              <span className="font-medium text-white">
                 {game.mode === "easy" ? "Easy" : "Hard"}
               </span>
             </div>
@@ -293,7 +293,7 @@ export function LobbyClient({ initialGame, initialPlayers, gameId }: LobbyClient
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-center text-slate-600 dark:text-slate-400"
+              className="text-center text-slate-400"
             >
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
               <p>Waiting for host to start the game...</p>

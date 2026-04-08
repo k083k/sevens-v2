@@ -23,11 +23,11 @@ function MultiplayerSetupContent() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-600/10 dark:to-teal-700/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-400/20 to-cyan-500/20 dark:from-blue-600/10 dark:to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-600/10 to-teal-700/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
 
       {/* Back button */}
@@ -46,14 +46,14 @@ function MultiplayerSetupContent() {
           className="flex flex-col items-center gap-8 w-full"
         >
           <div className="text-center space-y-2">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent">
               Multiplayer Setup
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
+            <p className="text-lg text-slate-400">
               Create a new game or join an existing one
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-200 dark:border-slate-700">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-700">
+              <span className="text-sm font-medium text-slate-300">
                 Mode: {mode === "easy" ? "Easy" : "Hard"}
               </span>
             </div>
@@ -68,21 +68,21 @@ function MultiplayerSetupContent() {
           >
             <button
               onClick={handleCreateGame}
-              className="w-full text-left p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all shadow-lg hover:shadow-xl group"
+              className="w-full text-left p-6 rounded-2xl border-2 border-slate-700 bg-slate-900/50 backdrop-blur-sm hover:border-emerald-500 hover:bg-emerald-950/30 transition-all shadow-lg hover:shadow-xl group"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors">
-                  <PlusCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                  <PlusCircle className="h-8 w-8 text-emerald-400" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-xl font-semibold text-white mb-1">
                     Create New Game
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-slate-400">
                     Host a game and get a code to share with friends
                   </p>
                 </div>
-                <div className="text-slate-400 group-hover:text-emerald-600 transition-colors">
+                <div className="text-slate-400 group-hover:text-emerald-400 transition-colors">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -100,21 +100,21 @@ function MultiplayerSetupContent() {
           >
             <button
               onClick={handleJoinGame}
-              className="w-full text-left p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all shadow-lg hover:shadow-xl group"
+              className="w-full text-left p-6 rounded-2xl border-2 border-slate-700 bg-slate-900/50 backdrop-blur-sm hover:border-blue-500 hover:bg-blue-950/30 transition-all shadow-lg hover:shadow-xl group"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/10 rounded-xl group-hover:bg-blue-500/20 transition-colors">
-                  <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  <Users className="h-8 w-8 text-blue-400" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-xl font-semibold text-white mb-1">
                     Join Existing Game
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-slate-400">
                     Enter a game code to join your friends
                   </p>
                 </div>
-                <div className="text-slate-400 group-hover:text-blue-600 transition-colors">
+                <div className="text-slate-400 group-hover:text-blue-400 transition-colors">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>

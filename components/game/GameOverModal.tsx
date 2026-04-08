@@ -34,7 +34,7 @@ export function GameOverModal({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden border border-slate-200 dark:border-slate-800"
+        className="bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden border border-slate-800"
       >
         <div className="p-8">
           {/* Winner Section */}
@@ -45,8 +45,8 @@ export function GameOverModal({
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className="inline-block mb-4"
             >
-              <div className={`p-4 rounded-full ${isPlayerWinner ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-amber-100 dark:bg-amber-900/30"}`}>
-                <Trophy className={`h-16 w-16 ${isPlayerWinner ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`} />
+              <div className={`p-4 rounded-full ${isPlayerWinner ? "bg-emerald-900/30" : "bg-amber-900/30"}`}>
+                <Trophy className={`h-16 w-16 ${isPlayerWinner ? "text-emerald-400" : "text-amber-400"}`} />
               </div>
             </motion.div>
 
@@ -54,7 +54,7 @@ export function GameOverModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-3xl font-bold text-slate-900 dark:text-white mb-2"
+              className="text-3xl font-bold text-white mb-2"
             >
               {isPlayerWinner ? "Victory!" : "Game Over"}
             </motion.h2>
@@ -63,7 +63,7 @@ export function GameOverModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-lg text-slate-600 dark:text-slate-400"
+              className="text-lg text-slate-400"
             >
               {isPlayerWinner ? "Congratulations! You won!" : `${winnerName} wins!`}
             </motion.p>
@@ -76,7 +76,7 @@ export function GameOverModal({
             transition={{ delay: 0.5 }}
             className="mb-8 space-y-2"
           >
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+            <h3 className="text-sm font-semibold text-slate-300 mb-3">
               Final Rankings
             </h3>
             {rankings.map((playerId, index) => {
@@ -86,23 +86,23 @@ export function GameOverModal({
                   key={playerId}
                   className={`flex items-center gap-3 p-3 rounded-lg ${
                     index === 0
-                      ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800"
-                      : "bg-slate-50 dark:bg-slate-800/50"
+                      ? "bg-emerald-900/20 border border-emerald-800"
+                      : "bg-slate-800/50"
                   }`}
                 >
                   <div className="flex items-center justify-center w-8 h-8">
                     {index === 0 ? (
-                      <Trophy className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      <Trophy className="h-5 w-5 text-emerald-400" />
                     ) : (
                       <Medal className="h-5 w-5 text-slate-400" />
                     )}
                   </div>
                   <div className="flex-1">
-                    <span className={`font-medium ${index === 0 ? "text-emerald-900 dark:text-emerald-100" : "text-slate-700 dark:text-slate-300"}`}>
+                    <span className={`font-medium ${index === 0 ? "text-emerald-100" : "text-slate-300"}`}>
                       {playerName}
                     </span>
                   </div>
-                  <span className="text-sm text-slate-500 dark:text-slate-500">
+                  <span className="text-sm text-slate-500">
                     {index === 0 ? "1st" : "2nd"}
                   </span>
                 </div>

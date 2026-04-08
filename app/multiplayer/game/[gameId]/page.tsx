@@ -110,10 +110,10 @@ export default function MultiplayerGamePage() {
 
   if (loading || !gameState) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400">Loading game...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" />
+          <p className="text-slate-400">Loading game...</p>
         </div>
       </div>
     );
@@ -137,13 +137,14 @@ export default function MultiplayerGamePage() {
         onBackToMenu={() => router.push("/")}
         showValidCards={mode === "easy"}
         header={
-          <div className="max-w-7xl mx-auto mb-2 px-4">
+          <div className="max-w-7xl mx-auto px-4 py-3 border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => router.push("/")}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Leave
@@ -153,7 +154,7 @@ export default function MultiplayerGamePage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowEndGameModal(true)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                   >
                     <X className="mr-2 h-4 w-4" />
                     End Game
@@ -161,24 +162,9 @@ export default function MultiplayerGamePage() {
                 )}
               </div>
 
-              <div className="text-center">
-                <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                  Current Turn
-                </div>
-                <div
-                  className={`text-lg font-bold ${
-                    isMyTurn
-                      ? "text-emerald-600"
-                      : "text-slate-900 dark:text-white"
-                  }`}
-                >
-                  {isMyTurn ? "YOUR TURN" : `${currentPlayer.name}'s turn`}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg">
-                <Users className="h-4 w-4" />
-                <span className="text-sm font-medium">
+              <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-800/50 rounded-lg">
+                <Users className="h-4 w-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-300">
                   {gameState.players.length} Players
                 </span>
               </div>
@@ -186,31 +172,31 @@ export default function MultiplayerGamePage() {
           </div>
         }
         opponentsInfo={
-          <div className="w-full max-w-7xl">
+          <div className="w-full max-w-7xl mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {gameState.players.map((player, index) => (
                 <div
                   key={player.id}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  className={`p-3 rounded-lg border transition-all ${
                     index === gameState.currentPlayerIndex
-                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
-                      : "border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50"
+                      ? "border-emerald-500/50 bg-emerald-500/10"
+                      : "border-slate-700 bg-slate-800/50"
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm font-bold">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-bold">
                       {player.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-medium text-sm">{player.name}</div>
-                      {player.id === playerId && (
-                        <div className="text-xs text-emerald-600 dark:text-emerald-400">
-                          You
-                        </div>
-                      )}
+                      <div className="font-medium text-sm text-slate-200">
+                        {player.name}
+                        {player.id === playerId && (
+                          <span className="ml-1.5 text-xs text-emerald-400">(You)</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400">
+                  <div className="text-xs text-slate-400 ml-9">
                     {player.getHandSize()} cards
                   </div>
                 </div>

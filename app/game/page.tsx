@@ -53,10 +53,10 @@ function GamePageContent() {
 
   if (!gameState) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400">Loading game...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" />
+          <p className="text-slate-400">Loading game...</p>
         </div>
       </div>
     );
@@ -100,30 +100,31 @@ function GamePageContent() {
       onBackToMenu={() => router.push("/setup")}
       showValidCards={mode === "easy"}
       header={
-        <header className="relative z-10 flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <header className="relative z-10 flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
           <Link href="/setup">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-slate-800">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
           </Link>
           <div className="text-center">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-xl font-bold text-white">
               Sevens - {mode === "easy" ? "Easy Mode" : "Hard Mode"}
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {isHumanTurn ? "Your Turn" : "AI's Turn"}
-            </p>
           </div>
           {/* Spacer to balance the header */}
           <div className="w-20" />
         </header>
       }
       opponentsInfo={
-        <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {aiPlayer?.name}: {aiPlayer?.getHandSize() || 0} cards
+        <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+              AI
+            </div>
+            <div>
+              <div className="text-sm font-medium text-slate-200">{aiPlayer?.name}</div>
+              <div className="text-xs text-slate-400">{aiPlayer?.getHandSize() || 0} cards remaining</div>
             </div>
           </div>
         </div>
@@ -136,10 +137,10 @@ export default function GamePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4" />
-            <p className="text-slate-600 dark:text-slate-400">Loading game...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" />
+            <p className="text-slate-400">Loading game...</p>
           </div>
         </div>
       }
