@@ -116,6 +116,7 @@ export function GameBoard({
   const [invalidClickCount, setInvalidClickCount] = useState(0);
   const [forceShowValid, setForceShowValid] = useState(false);
   const [playedCardKey, setPlayedCardKey] = useState<string | null>(null);
+  const [shakenCardKey, setShakenCardKey] = useState<string | null>(null);
 
   const { play: playSound, init: initSound, muted, toggleMute } = useSound();
   const prevTurnRef = useRef(isMyTurn);
@@ -211,6 +212,8 @@ export function GameBoard({
       }
 
       playSound("invalidMove");
+      setShakenCardKey(`${card.suit}-${card.rank}`);
+      setTimeout(() => setShakenCardKey(null), 400);
       const newCount = invalidClickCount + 1;
       setInvalidClickCount(newCount);
       if (newCount >= 3) {
@@ -316,7 +319,7 @@ export function GameBoard({
 
           {/* Board */}
           <div className="flex-1 w-full max-w-7xl mx-auto" role="region" aria-label="Game board">
-            <div className="grid grid-cols-4 gap-3 h-full">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 h-full">
               {SUITS_ORDER.map((suit) => {
                 const sequence = gameState.board[suit];
                 const isOpen = sequence.low !== null && sequence.high !== null;
@@ -342,12 +345,12 @@ export function GameBoard({
                     }`}
                   >
                     {/* Suit header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-2xl ${SUIT_COLORS[suit]}`}>
+                    <div className="flex items-center justify-between mb-2 md:mb-3">
+                      <div className="flex items-center gap-1.5 md:gap-2">
+                        <span className={`text-xl md:text-2xl ${SUIT_COLORS[suit]}`}>
                           {SUIT_SYMBOLS[suit]}
                         </span>
-                        <span className="font-semibold text-slate-300 text-sm">
+                        <span className="font-semibold text-slate-300 text-xs md:text-sm">
                           {getSuitDisplayName(suit)}
                         </span>
                       </div>
@@ -361,14 +364,14 @@ export function GameBoard({
                     {/* Card display area */}
                     <div className="flex-1 flex flex-col items-center justify-center">
                       {!isOpen ? (
-                        <div className="text-sm text-slate-600 italic">
+                        <div className="text-xs md:text-sm text-slate-600 italic">
                           Play 7{SUIT_SYMBOLS[suit]} to open
                         </div>
                       ) : (
                         <div className="flex flex-col items-center gap-2 w-full">
-                          {/* Visual card stack showing full run */}
+                          {/* Visual card stack showing full run — tighter on mobile */}
                           <div className="relative flex items-end justify-center" style={{
-                            minHeight: `${displayCards.length * 14 + 70}px`,
+                            minHeight: `${displayCards.length * 10 + 56}px`,
                             width: "100%",
                           }}>
                             {displayCards.map((rank, idx) => (
@@ -376,7 +379,7 @@ export function GameBoard({
                                 key={`${suit}-${rank}`}
                                 className="absolute left-1/2 -translate-x-1/2"
                                 style={{
-                                  bottom: `${idx * 14}px`,
+                                  bottom: `${idx * 10}px`,
                                   zIndex: idx,
                                 }}
                               >
@@ -419,9 +422,12 @@ export function GameBoard({
             </div>
 
             {/* Card hand — grouped by suit with overlap */}
-            <div className="flex gap-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
+            <div className="relative">
+              {/* Scroll fade indicators */}
+              <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-slate-900/95 to-transparent z-10 md:hidden" />
+              <div className="flex gap-4 md:gap-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
               {handBySuit.map(({ suit, cards }, groupIdx) => (
-                <div key={suit} className={`flex-shrink-0 ${groupIdx > 0 ? "border-l border-slate-700/50 pl-6" : ""}`}>
+                <div key={suit} className={`flex-shrink-0 ${groupIdx > 0 ? "border-l border-slate-700/50 pl-4 md:pl-6" : ""}`}>
                   {/* Suit label */}
                   <div className="flex items-center gap-1 mb-1">
                     <span className={`text-xs ${SUIT_COLORS[suit]}`}>
@@ -437,7 +443,8 @@ export function GameBoard({
                       <div
                         key={`${card.suit}-${card.rank}`}
                         className={`flex-shrink-0 transition-transform hover:!-translate-y-2 hover:!z-50 ${
-                          playedCardKey === `${card.suit}-${card.rank}` ? "animate-card-played" : ""
+                          playedCardKey === `${card.suit}-${card.rank}` ? "animate-card-played" :
+                          shakenCardKey === `${card.suit}-${card.rank}` ? "animate-card-shake" : ""
                         }`}
                         style={{
                           marginLeft: index === 0 ? 0 : -16,
@@ -457,6 +464,7 @@ export function GameBoard({
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </div>

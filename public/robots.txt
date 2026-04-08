@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /multiplayer/game/
+Disallow: /multiplayer/spectate/
+Disallow: /multiplayer/lobby/

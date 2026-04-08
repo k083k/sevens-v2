@@ -11,22 +11,25 @@ interface DealingAnimationProps {
   onComplete: () => void;
 }
 
-/** Positions around the table where player hands sit (relative to center) */
-const PLAYER_POSITIONS: Record<number, Array<{ x: number; y: number; label: string }>> = {
+/**
+ * Positions as fractions of container size so they scale on any screen.
+ * x/y are percentage offsets from center.
+ */
+const PLAYER_POSITIONS: Record<number, Array<{ xPct: number; yPct: number }>> = {
   2: [
-    { x: 0, y: 140, label: "bottom" },   // You (bottom)
-    { x: 0, y: -140, label: "top" },      // Opponent (top)
+    { xPct: 0, yPct: 35 },   // You (bottom)
+    { xPct: 0, yPct: -35 },  // Opponent (top)
   ],
   3: [
-    { x: 0, y: 140, label: "bottom" },
-    { x: -180, y: -60, label: "left" },
-    { x: 180, y: -60, label: "right" },
+    { xPct: 0, yPct: 35 },
+    { xPct: -38, yPct: -15 },
+    { xPct: 38, yPct: -15 },
   ],
   4: [
-    { x: 0, y: 140, label: "bottom" },
-    { x: -180, y: 0, label: "left" },
-    { x: 0, y: -140, label: "top" },
-    { x: 180, y: 0, label: "right" },
+    { xPct: 0, yPct: 35 },
+    { xPct: -38, yPct: 0 },
+    { xPct: 0, yPct: -35 },
+    { xPct: 38, yPct: 0 },
   ],
 };
 
@@ -45,15 +48,10 @@ export function DealingAnimation({
   // Shuffle phase
   useEffect(() => {
     if (phase !== "shuffle") return;
-
-    // Create cards for shuffle visual
     setShuffleCards(Array.from({ length: 12 }, (_, i) => i));
     soundManager.play("shuffle");
 
-    const timer = setTimeout(() => {
-      setPhase("deal");
-    }, 900);
-
+    const timer = setTimeout(() => setPhase("deal"), 900);
     return () => clearTimeout(timer);
   }, [phase]);
 
@@ -64,15 +62,13 @@ export function DealingAnimation({
 
     soundManager.play("gameStart");
 
-    // Deal cards in round-robin, with staggered timing
-    const totalCards = Math.min(cardsPerPlayer * playerCount, 16); // Show max 16 for perf
+    const totalCards = Math.min(cardsPerPlayer * playerCount, 16);
     let dealt = 0;
     let cancelled = false;
 
     const dealNext = () => {
       if (cancelled) return;
       if (dealt >= totalCards) {
-        // Brief pause then complete
         setTimeout(onComplete, 400);
         return;
       }
@@ -86,14 +82,14 @@ export function DealingAnimation({
       setTimeout(dealNext, 80);
     };
 
-    // Small delay before dealing starts
     const timer = setTimeout(dealNext, 300);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [phase, playerCount, cardsPerPlayer, onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="relative w-[500px] h-[400px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
+      {/* Container scales with viewport, max 500x400 on desktop */}
+      <div className="relative w-full max-w-[500px] aspect-[5/4]">
         {/* Center deck */}
         <AnimatePresence>
           {phase === "shuffle" && (
@@ -101,7 +97,6 @@ export function DealingAnimation({
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               exit={{ scale: 0.95, opacity: 0.8 }}
             >
-              {/* Deck stack */}
               {shuffleCards.map((i) => (
                 <motion.div
                   key={i}
@@ -113,20 +108,10 @@ export function DealingAnimation({
                     y: [-i * 2, -i * 2 + (i % 2 === 0 ? -8 : 8), -i * 2],
                     rotate: [0, (i % 2 === 0 ? 5 : -5), 0],
                   }}
-                  transition={{
-                    duration: 0.3,
-                    delay: (i * 0.04),
-                    ease: "easeInOut",
-                  }}
+                  transition={{ duration: 0.3, delay: i * 0.04, ease: "easeInOut" }}
                 >
-                  <div className="w-16 h-24 rounded-lg overflow-hidden shadow-lg border border-slate-600/50">
-                    <Image
-                      src="/cards/back-blue.png"
-                      alt="Card back"
-                      width={64}
-                      height={96}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-12 h-[72px] sm:w-16 sm:h-24 rounded-lg overflow-hidden shadow-lg border border-slate-600/50">
+                    <Image src="/cards/back-blue.png" alt="Card back" width={64} height={96} className="w-full h-full object-cover" />
                   </div>
                 </motion.div>
               ))}
@@ -134,23 +119,13 @@ export function DealingAnimation({
           )}
         </AnimatePresence>
 
-        {/* Deck during deal phase (stays in center, shrinks) */}
+        {/* Deck during deal phase */}
         {phase === "deal" && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
             {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="absolute"
-                style={{ y: -i * 2, zIndex: i }}
-              >
-                <div className="w-16 h-24 rounded-lg overflow-hidden shadow-lg border border-slate-600/50">
-                  <Image
-                    src="/cards/back-blue.png"
-                    alt="Card back"
-                    width={64}
-                    height={96}
-                    className="w-full h-full object-cover"
-                  />
+              <div key={i} className="absolute" style={{ top: -i * 2, zIndex: i }}>
+                <div className="w-12 h-[72px] sm:w-16 sm:h-24 rounded-lg overflow-hidden shadow-lg border border-slate-600/50">
+                  <Image src="/cards/back-blue.png" alt="Card back" width={64} height={96} className="w-full h-full object-cover" />
                 </div>
               </div>
             ))}
@@ -163,10 +138,10 @@ export function DealingAnimation({
             key={idx}
             className="absolute left-1/2 top-1/2 flex flex-col items-center gap-1"
             style={{
-              transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
+              transform: `translate(calc(-50% + ${pos.xPct}cqw), calc(-50% + ${pos.yPct}cqh))`,
             }}
           >
-            <div className="text-xs text-slate-400 font-medium px-2 py-1 bg-slate-800/60 rounded-md border border-slate-700/50">
+            <div className="text-[10px] sm:text-xs text-slate-400 font-medium px-2 py-1 bg-slate-800/60 rounded-md border border-slate-700/50 whitespace-nowrap">
               {playerNames[idx] || `Player ${idx + 1}`}
             </div>
           </div>
@@ -175,35 +150,23 @@ export function DealingAnimation({
         {/* Dealt cards flying from center to players */}
         {dealtCards.map((card) => {
           const target = positions[card.playerIdx];
+          // Convert percentage to pixels based on a rough estimate.
+          // Using vw-relative values for the animation targets.
           return (
             <motion.div
               key={card.id}
               className="absolute left-1/2 top-1/2 z-20"
-              initial={{
-                x: -32,
-                y: -48,
-                scale: 1,
-                opacity: 1,
-              }}
+              initial={{ x: -24, y: -36, scale: 1, opacity: 1 }}
               animate={{
-                x: target.x - 32 + (Math.random() * 20 - 10),
-                y: target.y - 48 + (Math.random() * 10 - 5),
+                x: `calc(${target.xPct}cqw - 24px + ${(Math.random() * 16 - 8)}px)`,
+                y: `calc(${target.yPct}cqh - 36px + ${(Math.random() * 8 - 4)}px)`,
                 scale: 0.6,
                 opacity: 0.8,
               }}
-              transition={{
-                duration: 0.25,
-                ease: "easeOut",
-              }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <div className="w-16 h-24 rounded-lg overflow-hidden shadow-lg border border-slate-600/50">
-                <Image
-                  src="/cards/back-blue.png"
-                  alt="Card"
-                  width={64}
-                  height={96}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-12 h-[72px] sm:w-16 sm:h-24 rounded-lg overflow-hidden shadow-lg border border-slate-600/50">
+                <Image src="/cards/back-blue.png" alt="Card" width={64} height={96} className="w-full h-full object-cover" />
               </div>
             </motion.div>
           );
@@ -211,7 +174,7 @@ export function DealingAnimation({
 
         {/* Phase label */}
         <motion.div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 text-sm text-slate-500 font-medium"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs sm:text-sm text-slate-500 font-medium"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}

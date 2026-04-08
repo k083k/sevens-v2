@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Trophy, Medal, Home, RotateCcw, Swords } from "lucide-react";
 import { motion } from "framer-motion";
@@ -19,6 +20,38 @@ export function GameOverModal({
   onPlayAgain,
   onBackToMenu,
 }: GameOverModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap: focus first button when modal opens
+  useEffect(() => {
+    if (!visible) return;
+    const firstButton = dialogRef.current?.querySelector("button");
+    firstButton?.focus();
+
+    // Trap focus within modal
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [visible]);
+
   if (!visible) return null;
 
   const getPlayerName = (id: string) => {
@@ -30,7 +63,7 @@ export function GameOverModal({
   const isPlayerWinner = winnerName === "You";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="game-over-title" ref={dialogRef}>
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -52,6 +85,7 @@ export function GameOverModal({
             </motion.div>
 
             <motion.h2
+              id="game-over-title"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}

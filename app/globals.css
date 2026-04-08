@@ -139,3 +139,17 @@ body {
   animation: card-played 0.4s ease-in forwards;
   pointer-events: none;
 }
+
+/* Invalid card shake */
+@keyframes card-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-6px); }
+  30% { transform: translateX(5px); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+}
+
+.animate-card-shake {
+  animation: card-shake 0.4s ease-out;
+}
