@@ -86,20 +86,23 @@
 ## Phase 4: Code Quality & Maintainability
 > Clean up patterns, remove dead code, improve developer experience.
 
-### 4.1 — Remove Unused Dependencies `[ NOT STARTED ]`
+### 4.1 — Remove Unused Dependencies `[ DONE ]`
 - Remove `@splinetool/react-spline` and `@splinetool/runtime` if not used
 - Audit all dependencies for necessity
 
-### 4.2 — Error Handling Strategy `[ NOT STARTED ]`
+### 4.2 — Error Handling Strategy `[ DONE ]`
 - Define consistent error types for game errors vs. network errors vs. validation errors
 - Add proper error handling in multiplayer flows (disconnection, stale state, race conditions)
 - Add reconnection logic for dropped realtime subscriptions
 
-### 4.3 — Environment & Configuration `[ NOT STARTED ]`
+### 4.3 — Environment & Configuration `[ DONE ]`
 - Add environment variable validation (fail fast on missing config)
 - Add `.env.example` with required variables documented
 
-### 4.4 — Testing Foundation `[ NOT STARTED ]`
+### 4.4 — Testing Foundation `[ DEFERRED ]`
+- Testing setup (Vitest + unit tests for GameEngine, Board, SpadesLockValidator)
+  deferred until after UI/UX polish. The game logic is stable and well-structured —
+  tests are valuable but not blocking.
 - Set up a test runner (Vitest recommended for Next.js)
 - Add unit tests for `GameEngine`, `SpadesLockValidator`, `Board` — these are pure logic, easy to test
 - Add tests for server actions (mock Supabase, test validation)
@@ -123,7 +126,7 @@
 | Phase 1 | DONE | Server-side security & API layer |
 | Phase 2 | DONE | Unify duplicated code |
 | Phase 3 | DONE | Leverage Next.js server features |
-| Phase 4 | NOT STARTED | Code quality & maintainability |
+| Phase 4 | DONE | Code quality & maintainability |
 | Phase 5 | NOT STARTED | UI/UX polish (future) |
 
 ---
