@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowLeft, Copy, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { createGame } from "@/lib/multiplayer/lobby";
+import { createGame } from "@/lib/actions/lobby-actions";
 
 function CreateGameContent() {
   const searchParams = useSearchParams();
@@ -28,21 +28,17 @@ function CreateGameContent() {
     setIsCreating(true);
     setError("");
 
-    const result = await createGame({
-      hostName: playerName.trim(),
-      mode: mode,
-      maxPlayers: 4,
-    });
+    const result = await createGame(playerName.trim(), mode, 4);
 
     setIsCreating(false);
 
-    if (result.success && result.gameId && result.playerId && result.gameCode) {
+    if (result.success) {
       // Store player info in sessionStorage
-      sessionStorage.setItem("playerId", result.playerId);
+      sessionStorage.setItem("playerId", result.data.playerId);
       sessionStorage.setItem("playerName", playerName.trim());
 
       // Navigate to lobby
-      router.push(`/multiplayer/lobby/${result.gameId}`);
+      router.push(`/multiplayer/lobby/${result.data.gameId}`);
     } else {
       setError(result.error || "Failed to create game");
     }
