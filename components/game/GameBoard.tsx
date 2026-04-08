@@ -150,13 +150,11 @@ export function GameBoard({
     }
 
     try {
+      onPlayCard(card);
       setPlayedCardKey(`${card.suit}-${card.rank}`);
-      setTimeout(() => {
-        onPlayCard(card);
-        setPlayedCardKey(null);
-        setInvalidClickCount(0);
-        setForceShowValid(false);
-      }, 300);
+      setTimeout(() => setPlayedCardKey(null), 400);
+      setInvalidClickCount(0);
+      setForceShowValid(false);
     } catch (error: any) {
       const msg = error.message || error.toString();
       const cardName = `${getRankNameFull(card.rank)} of ${getSuitDisplayName(card.suit)}`;
