@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowLeft, Copy, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { createGame } from "@/lib/multiplayer/lobby";
+import { createGame } from "@/lib/actions/lobby-actions";
 
 function CreateGameContent() {
   const searchParams = useSearchParams();
@@ -28,32 +28,28 @@ function CreateGameContent() {
     setIsCreating(true);
     setError("");
 
-    const result = await createGame({
-      hostName: playerName.trim(),
-      mode: mode,
-      maxPlayers: 4,
-    });
+    const result = await createGame(playerName.trim(), mode, 4);
 
     setIsCreating(false);
 
-    if (result.success && result.gameId && result.playerId && result.gameCode) {
+    if (result.success) {
       // Store player info in sessionStorage
-      sessionStorage.setItem("playerId", result.playerId);
+      sessionStorage.setItem("playerId", result.data.playerId);
       sessionStorage.setItem("playerName", playerName.trim());
 
       // Navigate to lobby
-      router.push(`/multiplayer/lobby/${result.gameId}`);
+      router.push(`/multiplayer/lobby/${result.data.gameId}`);
     } else {
       setError(result.error || "Failed to create game");
     }
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-600/10 dark:to-teal-700/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-400/20 to-cyan-500/20 dark:from-blue-600/10 dark:to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-600/10 to-teal-700/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
 
       {/* Back button */}
@@ -72,10 +68,10 @@ function CreateGameContent() {
           className="flex flex-col items-center gap-8 w-full"
         >
           <div className="text-center space-y-2">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent">
               Create Game
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
+            <p className="text-lg text-slate-400">
               Enter your name to create a new game
             </p>
           </div>
@@ -85,9 +81,9 @@ function CreateGameContent() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
-            <label htmlFor="playerName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="playerName" className="block text-sm font-medium text-slate-300 mb-2">
               Your Name
             </label>
             <input
@@ -102,11 +98,11 @@ function CreateGameContent() {
               }}
               placeholder="Enter your name"
               maxLength={20}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-lg"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-lg text-white placeholder-slate-500"
               disabled={isCreating}
             />
             {error && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              <p className="mt-2 text-sm text-red-400">
                 {error}
               </p>
             )}
@@ -117,25 +113,25 @@ function CreateGameContent() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
-            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+            <h3 className="font-semibold text-white mb-3">
               Game Settings
             </h3>
-            <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <div className="space-y-2 text-sm text-slate-400">
               <div className="flex justify-between">
                 <span>Mode:</span>
-                <span className="font-medium text-slate-900 dark:text-white">
+                <span className="font-medium text-white">
                   {mode === "easy" ? "Easy" : "Hard"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Max Players:</span>
-                <span className="font-medium text-slate-900 dark:text-white">4</span>
+                <span className="font-medium text-white">4</span>
               </div>
               <div className="flex justify-between">
                 <span>Your Role:</span>
-                <span className="font-medium text-emerald-600 dark:text-emerald-400">Host</span>
+                <span className="font-medium text-emerald-400">Host</span>
               </div>
             </div>
           </motion.div>

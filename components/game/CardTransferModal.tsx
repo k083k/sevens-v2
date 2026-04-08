@@ -28,18 +28,18 @@ export function CardTransferModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-200 dark:border-slate-800">
+      <div className="bg-slate-900 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-800">
         <div className="p-6">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold text-white mb-2">
               Select Card to Give
             </h2>
-            <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
+            <div className="flex items-center justify-center gap-2 text-slate-400">
               <span className="font-medium">{fromPlayerName}</span>
               <ArrowRight className="h-4 w-4" />
               <span className="font-medium">{toPlayerName}</span>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">
+            <p className="text-sm text-slate-500 mt-2">
               Choose a card to give to the next player
             </p>
           </div>

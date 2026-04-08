@@ -1,25 +1,32 @@
 /**
  * Multiplayer Game Store
  *
- * Manages multiplayer game state with real-time synchronization
+ * Manages multiplayer game state with real-time synchronization.
+ * All mutations go through server actions — the client never writes to DB directly.
+ * The client only subscribes to realtime updates (read-only).
  */
 
 import { create } from 'zustand'
 import { Game } from '../game/Game'
-import { GameState, PlayerType, ICard, GameMode, IPlayer } from '../game/types/types'
+import { GameState, PlayerType, ICard, GameMode, IPlayer, Suit, Rank } from '../game/types/types'
+import { Card } from '../game/models/Card'
 import {
-  saveGameState,
-  loadGameState,
   subscribeToGameState,
   unsubscribeFromGameState,
-  recordMove,
-  initializeGameState,
-  finishGame,
-  SerializableGameState,
   reconstructHand,
+  SerializableGameState,
 } from '../multiplayer/sync'
-import { getGamePlayers } from '../multiplayer/lobby'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+
+// Server actions
+import {
+  initializeGameState as serverInitializeGame,
+  loadGameState as serverLoadGameState,
+  playCard as serverPlayCard,
+  handleCannotPlay as serverHandleCannotPlay,
+  executeCardTransfer as serverExecuteCardTransfer,
+} from '../actions/game-actions'
+import { getGamePlayers } from '../actions/lobby-actions'
 
 interface MultiplayerStoreState {
   game: Game | null
@@ -41,6 +48,36 @@ interface MultiplayerStoreState {
   cleanup: () => void
 }
 
+/**
+ * Rebuild a local Game instance from serialized state (for rendering only).
+ * The authoritative state lives in the database — this is just so the
+ * UI has a Game object to read from.
+ */
+function rebuildLocalGame(state: SerializableGameState): Game {
+  const game = new Game()
+  const playerConfigs = state.players.map((p) => ({
+    id: p.id,
+    name: p.name,
+    type: PlayerType.HUMAN as PlayerType,
+  }))
+
+  game.initializeGame(playerConfigs, state.gameMode as GameMode)
+  game.dealCards()
+  game.restoreState(state)
+
+  // Overwrite hands with DB data
+  const gameState = game.getState()
+  gameState.players.forEach((player: IPlayer, index: number) => {
+    const saved = state.players[index]
+    if (saved?.hand) {
+      const reconstructedHand = reconstructHand(saved.hand)
+      player.setHand(reconstructedHand)
+    }
+  })
+
+  return game
+}
+
 export const useMultiplayerStore = create<MultiplayerStoreState>((set, get) => ({
   game: null,
   gameState: null,
@@ -50,12 +87,12 @@ export const useMultiplayerStore = create<MultiplayerStoreState>((set, get) => (
   channel: null,
 
   /**
-   * Initialize multiplayer game
-   * Creates game state from player list and starts listening for updates
+   * Initialize multiplayer game.
+   * Host: tells the server to deal and save state.
+   * Non-host: loads state from server.
    */
   initializeMultiplayerGame: async (gameId: string, playerId: string, gameMode: GameMode) => {
     try {
-      // Fetch players from database
       const players = await getGamePlayers(gameId)
 
       if (!players || players.length < 2) {
@@ -63,74 +100,31 @@ export const useMultiplayerStore = create<MultiplayerStoreState>((set, get) => (
       }
 
       const currentPlayer = players.find((p: any) => p.player_id === playerId)
-      let game: Game
-      let initialState: any
 
       if (currentPlayer?.is_host) {
-        console.log('Host initializing game...')
-
-        // Host creates the game with actual player IDs from database
-        const playerConfigs = players.map((p: any) => ({
-          id: p.player_id,
-          name: p.player_name,
-          type: PlayerType.HUMAN,
-        }))
-
-        game = new Game()
-        game.initializeGame(playerConfigs, gameMode)
-        game.dealCards()
-        initialState = game.getState()
-
-        // Save to database
-        const initResult = await initializeGameState(gameId, initialState, playerId)
-        if (!initResult.success) {
-          throw new Error(`Failed to initialize: ${initResult.error}`)
+        // Host: server initializes the game (deals cards, saves state)
+        const result = await serverInitializeGame(gameId, playerId, gameMode)
+        if (!result.success) {
+          throw new Error('error' in result ? result.error : 'Failed to initialize game')
         }
-        console.log('Game state saved successfully')
       } else {
-        console.log('Non-host loading game state...')
-
-        // Non-host waits and loads from database
+        // Non-host: wait briefly for host to finish initializing
         await new Promise(resolve => setTimeout(resolve, 1500))
-
-        const loadResult = await loadGameState(gameId)
-        if (!loadResult.success || !loadResult.state) {
-          throw new Error(`Failed to load game state: ${loadResult.error}`)
-        }
-
-        console.log('Loaded game state:', loadResult.state)
-
-        // Reconstruct game from loaded state with actual player IDs
-        const playerConfigs = loadResult.state.players.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          type: PlayerType.HUMAN,
-        }))
-
-        game = new Game()
-        game.initializeGame(playerConfigs, loadResult.state.gameMode)
-        game.dealCards() // This creates random hands, but we'll override them
-
-        // Restore complete game state from database
-        game.restoreState(loadResult.state)
-
-        // Override hands with the correct hands from database
-        // Reconstruct Card instances from plain objects
-        const gameState = game.getState()
-        gameState.players.forEach((player: IPlayer, index: number) => {
-          const savedPlayer = loadResult.state!.players[index]
-          if (savedPlayer && savedPlayer.hand) {
-            const reconstructedHand = reconstructHand(savedPlayer.hand)
-            player.setHand(reconstructedHand)
-          }
-        })
-
-        initialState = gameState
       }
 
+      // Both host and non-host: load state from server
+      const loadResult = await serverLoadGameState(gameId)
+      if (!loadResult.success || !('data' in loadResult)) {
+        throw new Error('Failed to load game state')
+      }
+
+      const serverState = loadResult.data
+      const game = rebuildLocalGame(serverState)
+      const initialState = game.getState()
+
       // Determine if it's this player's turn
-      const myPlayerIndex = players.findIndex((p: any) => p.player_id === playerId)
-      const isMyTurn = initialState.currentPlayerIndex === myPlayerIndex
+      const myPlayerIndex = serverState.players.findIndex((p) => p.id === playerId)
+      const isMyTurn = serverState.currentPlayerIndex === myPlayerIndex
 
       set({
         game,
@@ -140,35 +134,20 @@ export const useMultiplayerStore = create<MultiplayerStoreState>((set, get) => (
         isMyTurn,
       })
 
-      // Subscribe to state updates
-      const channel = subscribeToGameState(gameId, (newState: any) => {
-        const { game, playerId } = get()
-        if (!game || !playerId) return
+      // Subscribe to realtime updates (read-only)
+      const channel = subscribeToGameState(gameId, (newState: SerializableGameState) => {
+        const { playerId } = get()
+        if (!playerId) return
 
-        console.log('Received state update:', newState)
+        // Rebuild local game from the new server state
+        const updatedGame = rebuildLocalGame(newState)
 
-        // Restore complete game state (board, phase, turn, etc.)
-        game.restoreState(newState)
-
-        // Reconstruct game state from database
-        // Reconstruct Card instances from plain objects
-        const players = game.getState().players
-        players.forEach((player: IPlayer, index: number) => {
-          const savedPlayer = newState.players[index]
-          if (savedPlayer && savedPlayer.hand) {
-            const reconstructedHand = reconstructHand(savedPlayer.hand)
-            player.setHand(reconstructedHand)
-          }
-        })
-
-        const updatedState = game.getState()
-
-        // Check if it's now my turn
-        const myPlayerIndex = newState.players.findIndex((p: any) => p.id === playerId)
-        const isMyTurn = newState.currentPlayerIndex === myPlayerIndex
+        const myIdx = newState.players.findIndex((p) => p.id === playerId)
+        const isMyTurn = newState.currentPlayerIndex === myIdx
 
         set({
-          gameState: updatedState,
+          game: updatedGame,
+          gameState: updatedGame.getState(),
           isMyTurn,
         })
       })
@@ -181,136 +160,71 @@ export const useMultiplayerStore = create<MultiplayerStoreState>((set, get) => (
   },
 
   /**
-   * Play a card (multiplayer version)
+   * Play a card — sends to server action for validation, then waits for
+   * the realtime update to come back with the new state.
    */
   playCard: async (card: ICard) => {
-    const { game, gameId, playerId, isMyTurn } = get()
+    const { gameId, playerId, isMyTurn } = get()
 
-    if (!game || !gameId || !playerId) {
-      throw new Error('Game not initialized')
+    if (!gameId || !playerId) throw new Error('Game not initialized')
+    if (!isMyTurn) throw new Error('Not your turn!')
+
+    const result = await serverPlayCard(
+      gameId,
+      playerId,
+      card.suit as Suit,
+      card.rank as Rank
+    )
+
+    if (!result.success) {
+      throw new Error('error' in result ? result.error : 'Failed to play card')
     }
 
-    if (!isMyTurn) {
-      throw new Error('Not your turn!')
-    }
-
-    try {
-      // Play card locally
-      game.playCard(card)
-      const newState = game.getState()
-
-      // Record move
-      await recordMove(gameId, playerId, 'play_card', {
-        card: {
-          suit: card.suit,
-          rank: card.rank,
-        },
-      })
-
-      // Save state to database
-      await saveGameState(gameId, newState, playerId)
-
-      // Check if game is finished
-      if (newState.gamePhase === 'finished') {
-        await finishGame(gameId)
-      }
-
-      // Update local state
-      set({
-        gameState: newState,
-        isMyTurn: false, // Turn has moved to next player
-      })
-    } catch (error) {
-      console.error('Error playing card:', error)
-      throw error
-    }
+    // Optimistic: mark turn as over immediately
+    // The realtime subscription will update the full state
+    set({ isMyTurn: false })
   },
 
   /**
-   * Handle cannot play (multiplayer version)
+   * Handle cannot play — server validates and executes.
    */
   handleCannotPlay: async () => {
-    const { game, gameId, playerId, isMyTurn } = get()
+    const { gameId, playerId, isMyTurn } = get()
 
-    if (!game || !gameId || !playerId) {
-      throw new Error('Game not initialized')
+    if (!gameId || !playerId) throw new Error('Game not initialized')
+    if (!isMyTurn) throw new Error('Not your turn!')
+
+    const result = await serverHandleCannotPlay(gameId, playerId)
+
+    if (!result.success) {
+      throw new Error('error' in result ? result.error : 'Failed to handle cannot play')
     }
 
-    if (!isMyTurn) {
-      throw new Error('Not your turn!')
-    }
-
-    try {
-      // Handle cannot play locally
-      game.handleCannotPlay()
-      const newState = game.getState()
-
-      // Record move
-      await recordMove(gameId, playerId, 'cannot_play', {})
-
-      // Save state to database
-      await saveGameState(gameId, newState, playerId)
-
-      // Update local state
-      set({
-        gameState: newState,
-        isMyTurn: false,
-      })
-    } catch (error) {
-      console.error('Error handling cannot play:', error)
-      throw error
-    }
+    set({ isMyTurn: false })
   },
 
   /**
-   * Execute card transfer (multiplayer version)
+   * Execute card transfer — server validates the giving player has the card.
    */
   executeCardTransfer: async (card: ICard) => {
-    const { game, gameId, playerId } = get()
+    const { gameId, playerId } = get()
 
-    if (!game || !gameId || !playerId) {
-      throw new Error('Game not initialized')
-    }
+    if (!gameId || !playerId) throw new Error('Game not initialized')
 
-    const state = game.getState()
-    if (!state.pendingCardTransfer) {
-      throw new Error('No pending card transfer')
-    }
+    const result = await serverExecuteCardTransfer(
+      gameId,
+      playerId,
+      card.suit as Suit,
+      card.rank as Rank
+    )
 
-    // Check if this player is the one giving the card
-    if (state.pendingCardTransfer.from !== playerId) {
-      throw new Error('You are not the player giving the card')
-    }
-
-    try {
-      // Execute transfer locally
-      game.executeCardTransfer(card)
-      const newState = game.getState()
-
-      // Record move
-      await recordMove(gameId, playerId, 'transfer_card', {
-        card: {
-          suit: card.suit,
-          rank: card.rank,
-        },
-        to: state.pendingCardTransfer.to,
-      })
-
-      // Save state to database
-      await saveGameState(gameId, newState, playerId)
-
-      // Update local state
-      set({
-        gameState: newState,
-      })
-    } catch (error) {
-      console.error('Error executing card transfer:', error)
-      throw error
+    if (!result.success) {
+      throw new Error('error' in result ? result.error : 'Failed to transfer card')
     }
   },
 
   /**
-   * Cleanup (unsubscribe from realtime)
+   * Cleanup — unsubscribe from realtime.
    */
   cleanup: () => {
     const { channel } = get()
