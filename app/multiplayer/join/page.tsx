@@ -181,7 +181,7 @@ function JoinGameContent() {
 
 export default function JoinGamePage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" /><p className="text-slate-400">Loading...</p></div></div>}>
       <JoinGameContent />
     </Suspense>
   );

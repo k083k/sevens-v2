@@ -1,18 +1,19 @@
 /**
- * HardAI - Strategic play implementation
+ * HardAI - Strategic play with lookahead
  *
  * Strategy priorities:
- * 1. Advance spades to unlock more cards
- * 2. Avoid opening suits that benefit opponents
- * 3. Hold 7s strategically when better plays exist
+ * 1. Score each valid move by how much it improves our position
+ * 2. Consider: unlocking our own cards, keeping opponents locked, holding 7s
+ * 3. 1-turn lookahead: simulate each move and count how many of OUR cards become playable
  * 4. When giving cards, give the most disruptive/unplayable card
+ * 5. Consider opponent hand size when giving cards
  */
 
-import { BoardState, IAIStrategy, ICard, IPlayer, Suit } from '../types/types';
+import { BoardState, IAIStrategy, ICard, IPlayer, Suit, SuitSequence } from '../types/types';
 
 export class HardAI implements IAIStrategy {
   /**
-   * Select the best strategic card to play
+   * Select the best strategic card to play using scored evaluation
    */
   public selectCardToPlay(
     hand: ReadonlyArray<ICard>,
@@ -23,24 +24,149 @@ export class HardAI implements IAIStrategy {
       throw new Error('No valid cards to play');
     }
 
-    // Priority 1: Play spades cards to unlock more ranks
-    const spadesCards = validCards.filter((card) => card.suit === Suit.SPADES);
-    if (spadesCards.length > 0) {
-      // Prefer extending toward extremes (Ace or King) to unlock more cards
-      const sortedSpades = this.sortByDistanceFromSeven(spadesCards);
-      return sortedSpades[0];
+    if (validCards.length === 1) {
+      return validCards[0];
     }
 
-    // Priority 2: Play non-7 cards before opening new suits
-    const nonSevenCards = validCards.filter((card) => card.rank !== 7);
-    if (nonSevenCards.length > 0) {
-      // Prefer cards that are further from 7 (harder to play later)
-      const sorted = this.sortByDistanceFromSeven(nonSevenCards);
-      return sorted[0];
+    // Score each valid card
+    const scored = validCards.map((card) => ({
+      card,
+      score: this.scoreMove(card, hand, boardState),
+    }));
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0].card;
+  }
+
+  /**
+   * Score a potential move. Higher = better.
+   */
+  private scoreMove(
+    card: ICard,
+    hand: ReadonlyArray<ICard>,
+    boardState: BoardState
+  ): number {
+    let score = 0;
+
+    // Simulate playing this card
+    const newBoard = this.simulatePlay(card, boardState);
+
+    // Count how many of our remaining cards become playable after this move
+    const remainingHand = hand.filter((c) => !(c.suit === card.suit && c.rank === card.rank));
+    const newlyPlayable = this.countPlayableCards(remainingHand, newBoard);
+    const currentlyPlayable = this.countPlayableCards(remainingHand, boardState);
+    const unlocked = newlyPlayable - currentlyPlayable;
+
+    // Big bonus for unlocking our own cards
+    score += unlocked * 15;
+
+    // Spades cards are valuable — they unlock ranks for all suits
+    if (card.suit === Suit.SPADES) {
+      score += 8;
+
+      // Extra bonus for extending toward extremes (unlocks more)
+      const spadesSeq = boardState[Suit.SPADES];
+      if (spadesSeq.low !== null) {
+        // Prefer whichever direction has more of our cards waiting
+        const belowCount = remainingHand.filter(
+          (c) => c.suit !== Suit.SPADES && c.rank < spadesSeq.low!
+        ).length;
+        const aboveCount = remainingHand.filter(
+          (c) => c.suit !== Suit.SPADES && c.rank > spadesSeq.high!
+        ).length;
+
+        if (card.rank < spadesSeq.low! && belowCount > 0) score += belowCount * 3;
+        if (card.rank > spadesSeq.high! && aboveCount > 0) score += aboveCount * 3;
+      }
     }
 
-    // Priority 3: If only 7s remain, play one (strategic hold didn't work out)
-    return validCards[0];
+    // Penalty for playing a 7 (opening a suit helps opponents too)
+    if (card.rank === 7 && card.suit !== Suit.SPADES) {
+      // Only penalize if we don't have many cards in that suit
+      const cardsInSuit = remainingHand.filter((c) => c.suit === card.suit).length;
+      if (cardsInSuit <= 2) {
+        score -= 10; // We're helping opponents more than ourselves
+      } else {
+        score += 3; // We have cards ready to play in this suit
+      }
+    }
+
+    // Bonus for cards far from 7 (harder to play later, get rid of them early)
+    score += Math.abs(card.rank - 7);
+
+    // Small bonus for playing in suits where we have adjacent cards ready
+    for (const c of remainingHand) {
+      if (c.suit === card.suit && Math.abs(c.rank - card.rank) === 1) {
+        score += 4; // We can chain plays in this suit
+      }
+    }
+
+    return score;
+  }
+
+  /**
+   * Simulate playing a card and return the resulting board state
+   */
+  private simulatePlay(card: ICard, boardState: BoardState): BoardState {
+    const newBoard: BoardState = {
+      [Suit.SPADES]: { ...boardState[Suit.SPADES] },
+      [Suit.HEARTS]: { ...boardState[Suit.HEARTS] },
+      [Suit.DIAMONDS]: { ...boardState[Suit.DIAMONDS] },
+      [Suit.CLUBS]: { ...boardState[Suit.CLUBS] },
+    };
+
+    const seq = newBoard[card.suit];
+
+    if (card.rank === 7) {
+      newBoard[card.suit] = { low: 7, high: 7 };
+    } else if (seq.low !== null && card.rank === seq.low - 1) {
+      newBoard[card.suit] = { ...seq, low: card.rank };
+    } else if (seq.high !== null && card.rank === seq.high + 1) {
+      newBoard[card.suit] = { ...seq, high: card.rank };
+    }
+
+    return newBoard;
+  }
+
+  /**
+   * Count how many cards in a hand are playable on a given board state
+   */
+  private countPlayableCards(
+    hand: ReadonlyArray<ICard>,
+    boardState: BoardState
+  ): number {
+    let count = 0;
+    for (const card of hand) {
+      if (this.isPlayable(card, boardState)) count++;
+    }
+    return count;
+  }
+
+  /**
+   * Check if a single card is playable (sequence + spades lock)
+   */
+  private isPlayable(card: ICard, boardState: BoardState): boolean {
+    const seq = boardState[card.suit];
+
+    // Check sequence rules
+    if (card.rank === 7) {
+      if (seq.low !== null) return false; // suit already open
+    } else {
+      if (seq.low === null) return false; // suit not open
+      if (card.rank !== seq.low - 1 && card.rank !== seq.high! + 1) return false;
+    }
+
+    // Check spades lock
+    if (card.suit !== Suit.SPADES) {
+      const spadesSeq = boardState[Suit.SPADES];
+      if (spadesSeq.low === null) {
+        if (card.rank !== 7) return false;
+      } else {
+        if (card.rank < spadesSeq.low || card.rank > spadesSeq.high!) return false;
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -55,60 +181,70 @@ export class HardAI implements IAIStrategy {
       throw new Error('No cards in hand to give');
     }
 
-    // Strategy: Give cards that are hardest to play
+    // Score each card — higher = worse for opponent (better to give away)
+    const scored = hand.map((card) => ({
+      card,
+      score: this.scoreCardToGive(card, boardState, recipient),
+    }));
 
-    // Priority 1: Give cards in suits not yet opened (locked behind 7s)
-    const cardsInClosedSuits = hand.filter((card) => {
-      const suitState = boardState[card.suit];
-      return suitState.low === null && suitState.high === null;
-    });
-
-    if (cardsInClosedSuits.length > 0) {
-      // Among closed suits, give cards furthest from 7 (most delayed)
-      return this.sortByDistanceFromSeven(cardsInClosedSuits)[0];
-    }
-
-    // Priority 2: Give cards that are locked by spades
-    const lockedCards = hand.filter((card) => {
-      if (card.suit === Suit.SPADES) return false;
-
-      const spadesState = boardState[Suit.SPADES];
-      if (!spadesState.low || !spadesState.high) return true;
-
-      // Check if rank is outside spades range
-      return card.rank < spadesState.low || card.rank > spadesState.high;
-    });
-
-    if (lockedCards.length > 0) {
-      return this.sortByDistanceFromSeven(lockedCards)[0];
-    }
-
-    // Priority 3: Give cards at sequence extremes (least immediately playable)
-    const cardsAtExtremes = hand.filter((card) => {
-      const suitState = boardState[card.suit];
-      if (!suitState.low || !suitState.high) return false;
-
-      // Check if card is NOT adjacent to current sequence
-      return card.rank !== suitState.low - 1 && card.rank !== suitState.high + 1;
-    });
-
-    if (cardsAtExtremes.length > 0) {
-      return this.sortByDistanceFromSeven(cardsAtExtremes)[0];
-    }
-
-    // Fallback: Give card furthest from 7
-    return this.sortByDistanceFromSeven(hand)[0];
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0].card;
   }
 
   /**
-   * Sort cards by their distance from 7 (furthest first)
-   * Cards further from 7 are harder to play and more strategic to hold/give
+   * Score how disruptive a card is to give to an opponent.
+   * Higher = more disruptive (better to give).
    */
-  private sortByDistanceFromSeven(cards: ReadonlyArray<ICard>): ICard[] {
-    return [...cards].sort((a, b) => {
-      const distA = Math.abs(a.rank - 7);
-      const distB = Math.abs(b.rank - 7);
-      return distB - distA; // Descending order (furthest first)
-    });
+  private scoreCardToGive(
+    card: ICard,
+    boardState: BoardState,
+    recipient: IPlayer
+  ): number {
+    let score = 0;
+
+    const seq = boardState[card.suit];
+    const spadesSeq = boardState[Suit.SPADES];
+
+    // Cards in unopened suits are dead weight
+    if (seq.low === null && card.rank !== 7) {
+      score += 20;
+    }
+
+    // Cards locked by spades are hard to play
+    if (card.suit !== Suit.SPADES && spadesSeq.low !== null) {
+      if (card.rank < spadesSeq.low || card.rank > spadesSeq.high!) {
+        score += 15;
+        // Even worse if the needed spades rank is far away
+        const distToUnlock = Math.min(
+          Math.abs(card.rank - spadesSeq.low),
+          Math.abs(card.rank - spadesSeq.high!)
+        );
+        score += distToUnlock * 2;
+      }
+    }
+
+    // Cards far from current sequence are harder to play
+    if (seq.low !== null && seq.high !== null) {
+      const distToLow = Math.abs(card.rank - (seq.low - 1));
+      const distToHigh = Math.abs(card.rank - (seq.high + 1));
+      const minDist = Math.min(distToLow, distToHigh);
+      score += minDist * 3;
+    }
+
+    // Distance from 7 — extreme cards are generally harder
+    score += Math.abs(card.rank - 7);
+
+    // If recipient has few cards, giving them hard-to-play cards is more impactful
+    const recipientHandSize = recipient.getHandSize();
+    if (recipientHandSize <= 3) {
+      score += 5; // Extra value in disrupting someone close to winning
+    }
+
+    // Avoid giving 7s — they're too useful for the opponent
+    if (card.rank === 7) {
+      score -= 25;
+    }
+
+    return score;
   }
 }

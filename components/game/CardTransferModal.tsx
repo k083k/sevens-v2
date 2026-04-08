@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Card } from "./Card";
 import { Suit, ICard } from "@/lib/game/types/types";
 import { ArrowRight } from "lucide-react";
@@ -17,6 +18,14 @@ export function CardTransferModal({
   availableCards,
   onSelectCard,
 }: CardTransferModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!visible) return;
+    const firstCard = dialogRef.current?.querySelector("button");
+    firstCard?.focus();
+  }, [visible]);
+
   if (!visible) return null;
 
   const suitNames: Record<Suit, string> = {
@@ -27,11 +36,11 @@ export function CardTransferModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="transfer-title" ref={dialogRef}>
       <div className="bg-slate-900 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-800">
         <div className="p-6">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 id="transfer-title" className="text-2xl font-bold text-white mb-2">
               Select Card to Give
             </h2>
             <div className="flex items-center justify-center gap-2 text-slate-400">

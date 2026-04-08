@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -10,7 +11,7 @@ interface CardProps {
   size?: "small" | "medium" | "large";
 }
 
-export function Card({ suit, rank, isValid = false, disabled = false, onClick, size = "medium" }: CardProps) {
+export const Card = memo(function Card({ suit, rank, isValid = false, disabled = false, onClick, size = "medium" }: CardProps) {
   const suitMap: Record<string, string> = {
     hearts: "heart",
     diamonds: "diamond",
@@ -72,4 +73,4 @@ export function Card({ suit, rank, isValid = false, disabled = false, onClick, s
       )}
     </button>
   );
-}
+});

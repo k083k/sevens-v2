@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -18,6 +18,8 @@ function GamePageContent() {
 
   const [isDealing, setIsDealing] = useState(true);
   const [statsRecorded, setStatsRecorded] = useState(false);
+  const [turnCount, setTurnCount] = useState(0);
+  const prevPlayerIndex = useRef<number | null>(null);
 
   const {
     gameState,
@@ -48,6 +50,15 @@ function GamePageContent() {
     setIsDealing(false);
   }, []);
 
+  // Count turns
+  useEffect(() => {
+    if (!gameState || gameState.gamePhase !== "playing") return;
+    if (prevPlayerIndex.current !== null && prevPlayerIndex.current !== gameState.currentPlayerIndex) {
+      setTurnCount((c) => c + 1);
+    }
+    prevPlayerIndex.current = gameState.currentPlayerIndex;
+  }, [gameState?.currentPlayerIndex, gameState?.gamePhase]);
+
   // Record game stats when game finishes
   useEffect(() => {
     if (!gameState || gameState.gamePhase !== "finished" || statsRecorded) return;
@@ -61,10 +72,10 @@ function GamePageContent() {
       mode: mode as "easy" | "hard",
       finishPosition: position,
       playerCount: gameState.players.length,
-      turnsPlayed: 0, // not tracked yet
+      turnsPlayed: turnCount,
     });
     setStatsRecorded(true);
-  }, [gameState?.gamePhase, gameState?.rankings, statsRecorded, mode]);
+  }, [gameState?.gamePhase, gameState?.rankings, statsRecorded, mode, turnCount]);
 
   // Process AI turns
   useEffect(() => {
@@ -116,6 +127,8 @@ function GamePageContent() {
     dealCards();
     setIsDealing(true);
     setStatsRecorded(false);
+    setTurnCount(0);
+    prevPlayerIndex.current = null;
   };
 
   if (isDealing) {

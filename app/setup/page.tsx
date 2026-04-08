@@ -68,9 +68,11 @@ export default function SetupPage() {
                 Play Mode
               </h2>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3" role="radiogroup" aria-label="Play mode">
               {/* Single Player */}
               <button
+                role="radio"
+                aria-checked={playMode === "single"}
                 onClick={() => setPlayMode("single")}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                   playMode === "single"
@@ -102,6 +104,8 @@ export default function SetupPage() {
 
               {/* Multiplayer */}
               <button
+                role="radio"
+                aria-checked={playMode === "multi"}
                 onClick={() => setPlayMode("multi")}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                   playMode === "multi"
@@ -148,9 +152,11 @@ export default function SetupPage() {
                 Game Mode
               </h2>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3" role="radiogroup" aria-label="Game difficulty">
               {/* Easy Mode */}
               <button
+                role="radio"
+                aria-checked={gameMode === "easy"}
                 onClick={() => setGameMode("easy")}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                   gameMode === "easy"
@@ -182,6 +188,8 @@ export default function SetupPage() {
 
               {/* Hard Mode */}
               <button
+                role="radio"
+                aria-checked={gameMode === "hard"}
                 onClick={() => setGameMode("hard")}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                   gameMode === "hard"

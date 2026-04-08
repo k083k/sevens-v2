@@ -264,7 +264,7 @@ export default function SpectatePage() {
 
         {/* Board */}
         <div className="flex-1 w-full max-w-7xl mx-auto">
-          <div className="grid grid-cols-4 gap-3 h-full">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 h-full">
             {SUITS_ORDER.map((suit) => {
               const sequence = gameState.board[suit];
               const isOpen = sequence.low !== null && sequence.high !== null;
