@@ -11,8 +11,8 @@ const PlayingCard = ({ suit, rank, delay = 0, position }: { suit: string; rank: 
   const suitInfo: Record<string, { color: string; symbol: string }> = {
     "hearts": { color: "text-red-500", symbol: "♥" },
     "diamonds": { color: "text-red-500", symbol: "♦" },
-    "spades": { color: "text-gray-900", symbol: "♠" },
-    "clubs": { color: "text-gray-900", symbol: "♣" },
+    "spades": { color: "text-slate-300", symbol: "♠" },
+    "clubs": { color: "text-slate-300", symbol: "♣" },
   };
 
   const { color, symbol } = suitInfo[suit];
@@ -35,11 +35,11 @@ const PlayingCard = ({ suit, rank, delay = 0, position }: { suit: string; rank: 
         delay,
       }}
     >
-      <div className="relative w-24 h-32 bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl border border-gray-200 overflow-hidden" style={{
-        boxShadow: "0 10px 40px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1)",
+      <div className="relative w-24 h-32 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-slate-700 overflow-hidden" style={{
+        boxShadow: "0 10px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)",
       }}>
         {/* Card shine effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-60" />
 
         {/* Top left corner */}
         <div className="absolute top-2 left-2 flex flex-col items-center leading-none">
@@ -70,11 +70,11 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-600/10 dark:to-teal-700/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-400/20 to-cyan-500/20 dark:from-blue-600/10 dark:to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-600/10 to-teal-700/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
 
       {/* Floating playing cards in background - only render after mount */}
@@ -118,10 +118,10 @@ export default function Home() {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="space-y-6"
           >
-            <h1 className="text-7xl md:text-8xl font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-7xl md:text-8xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent tracking-tight">
               SEVENS
             </h1>
-            <p className="text-2xl md:text-3xl text-slate-700 dark:text-slate-300 font-bold tracking-wide">
+            <p className="text-2xl md:text-3xl text-slate-300 font-bold tracking-wide">
               The Classic Card Game
             </p>
           </motion.div>
@@ -131,7 +131,7 @@ export default function Home() {
             initial={mounted ? { opacity: 0 } : false}
             animate={mounted ? { opacity: 1 } : {}}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="max-w-lg text-xl text-slate-600 dark:text-slate-400 leading-relaxed"
+            className="max-w-lg text-xl text-slate-400 leading-relaxed"
           >
             Master the art of sequence building. Play your cards strategically, starting from sevens, and outmaneuver your opponent.
           </motion.p>
@@ -163,17 +163,17 @@ export default function Home() {
             transition={{ delay: 1, duration: 0.8 }}
             className="mt-8 flex flex-wrap gap-4 justify-center text-sm"
           >
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-200 dark:border-slate-700">
-              <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">Competitive AI</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-700">
+              <Trophy className="h-4 w-4 text-amber-400" />
+              <span className="font-medium text-slate-300">Competitive AI</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-200 dark:border-slate-700">
-              <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">Easy & Hard Modes</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-700">
+              <Zap className="h-4 w-4 text-emerald-400" />
+              <span className="font-medium text-slate-300">Easy & Hard Modes</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-full border border-slate-700">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">Ready to Play</span>
+              <span className="font-medium text-slate-300">Ready to Play</span>
             </div>
           </motion.div>
         </motion.div>

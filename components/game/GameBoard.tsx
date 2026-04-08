@@ -24,39 +24,15 @@ export interface Toast {
 
 export interface GameBoardProps {
   gameState: GameState;
-
-  /** The player whose hand is shown at the bottom. */
   myPlayer: IPlayer;
-
-  /** Whether it's currently the local player's turn. */
   isMyTurn: boolean;
-
-  /** Callback when the player clicks a card in their hand. */
   onPlayCard: (card: ICard) => void;
-
-  /** Callback when the player clicks "Can't Play". */
   onCannotPlay: () => void;
-
-  /** Callback when the player selects a card to give in a transfer. */
   onCardTransfer: (card: ICard) => void;
-
-  /** Callback when the player clicks "Play Again" on the game-over screen. */
   onPlayAgain: () => void;
-
-  /** Callback when the player clicks "Menu" / "Back" on the game-over screen. */
   onBackToMenu: () => void;
-
-  /**
-   * Whether to show valid-card highlights.
-   * In easy mode this is always true; in hard mode it can be toggled
-   * after repeated invalid attempts.
-   */
   showValidCards: boolean;
-
-  /** Optional header content rendered above the board (mode-specific). */
   header?: React.ReactNode;
-
-  /** Optional opponents info rendered above the board (mode-specific). */
   opponentsInfo?: React.ReactNode;
 }
 
@@ -69,9 +45,31 @@ const SUIT_NAMES: Record<Suit, "hearts" | "diamonds" | "clubs" | "spades"> = {
   [Suit.SPADES]: "spades",
 };
 
-const SUITS_ORDER = [Suit.HEARTS, Suit.DIAMONDS, Suit.CLUBS, Suit.SPADES];
+const SUIT_SYMBOLS: Record<Suit, string> = {
+  [Suit.HEARTS]: "\u2665",
+  [Suit.DIAMONDS]: "\u2666",
+  [Suit.CLUBS]: "\u2663",
+  [Suit.SPADES]: "\u2660",
+};
+
+const SUIT_COLORS: Record<Suit, string> = {
+  [Suit.HEARTS]: "text-red-500",
+  [Suit.DIAMONDS]: "text-red-500",
+  [Suit.CLUBS]: "text-slate-300",
+  [Suit.SPADES]: "text-slate-300",
+};
+
+const SUITS_ORDER = [Suit.SPADES, Suit.HEARTS, Suit.DIAMONDS, Suit.CLUBS];
 
 function getRankName(rank: number): string {
+  if (rank === 1) return "A";
+  if (rank === 11) return "J";
+  if (rank === 12) return "Q";
+  if (rank === 13) return "K";
+  return rank.toString();
+}
+
+function getRankNameFull(rank: number): string {
   if (rank === 1) return "Ace";
   if (rank === 11) return "Jack";
   if (rank === 12) return "Queen";
@@ -81,6 +79,21 @@ function getRankName(rank: number): string {
 
 function getSuitDisplayName(suit: string): string {
   return suit.charAt(0).toUpperCase() + suit.slice(1);
+}
+
+/** Sort cards by suit order (spades, hearts, diamonds, clubs), then by rank ascending. */
+function sortHand(hand: ReadonlyArray<ICard>): ICard[] {
+  const suitOrder: Record<string, number> = {
+    [Suit.SPADES]: 0,
+    [Suit.HEARTS]: 1,
+    [Suit.DIAMONDS]: 2,
+    [Suit.CLUBS]: 3,
+  };
+  return [...hand].sort((a, b) => {
+    const suitDiff = suitOrder[a.suit] - suitOrder[b.suit];
+    if (suitDiff !== 0) return suitDiff;
+    return a.rank - b.rank;
+  });
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -101,8 +114,9 @@ export function GameBoard({
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [invalidClickCount, setInvalidClickCount] = useState(0);
   const [forceShowValid, setForceShowValid] = useState(false);
+  const [playedCardKey, setPlayedCardKey] = useState<string | null>(null);
 
-  const myHand = myPlayer.getHand();
+  const myHand = sortHand(myPlayer.getHand());
 
   // ── Toast helpers ──
 
@@ -136,12 +150,16 @@ export function GameBoard({
     }
 
     try {
-      onPlayCard(card);
-      setInvalidClickCount(0);
-      setForceShowValid(false);
+      setPlayedCardKey(`${card.suit}-${card.rank}`);
+      setTimeout(() => {
+        onPlayCard(card);
+        setPlayedCardKey(null);
+        setInvalidClickCount(0);
+        setForceShowValid(false);
+      }, 300);
     } catch (error: any) {
       const msg = error.message || error.toString();
-      const cardName = `${getRankName(card.rank)} of ${getSuitDisplayName(card.suit)}`;
+      const cardName = `${getRankNameFull(card.rank)} of ${getSuitDisplayName(card.suit)}`;
 
       if (msg.includes("Spades suit is locked") || msg.includes("locked by spades")) {
         addToast("Spades are locked! Play a 7 in any suit first to unlock them.", "warning");
@@ -151,11 +169,11 @@ export function GameBoard({
           const lo = seq.low - 1;
           const hi = seq.high + 1;
           if (lo >= 1 && hi <= 13) {
-            addToast(`${cardName} can't be played yet. ${getSuitDisplayName(card.suit)} needs ${getRankName(lo)} or ${getRankName(hi)} next.`, "warning");
+            addToast(`${cardName} can't be played yet. ${getSuitDisplayName(card.suit)} needs ${getRankNameFull(lo)} or ${getRankNameFull(hi)} next.`, "warning");
           } else if (lo < 1) {
-            addToast(`${cardName} can't be played yet. ${getSuitDisplayName(card.suit)} needs ${getRankName(hi)} next.`, "warning");
+            addToast(`${cardName} can't be played yet. ${getSuitDisplayName(card.suit)} needs ${getRankNameFull(hi)} next.`, "warning");
           } else {
-            addToast(`${cardName} can't be played yet. ${getSuitDisplayName(card.suit)} needs ${getRankName(lo)} next.`, "warning");
+            addToast(`${cardName} can't be played yet. ${getSuitDisplayName(card.suit)} needs ${getRankNameFull(lo)} next.`, "warning");
           }
         }
       } else if (msg.includes("not opened") || msg.includes("not open")) {
@@ -205,6 +223,18 @@ export function GameBoard({
     }
   };
 
+  // ── Group hand by suit for rendering ──
+
+  const handBySuit: { suit: Suit; cards: ICard[] }[] = [];
+  let currentSuit: Suit | null = null;
+  for (const card of myHand) {
+    if (card.suit !== currentSuit) {
+      currentSuit = card.suit as Suit;
+      handBySuit.push({ suit: currentSuit, cards: [] });
+    }
+    handBySuit[handBySuit.length - 1].cards.push(card);
+  }
+
   // ── Render ──
 
   return (
@@ -218,81 +248,98 @@ export function GameBoard({
         </div>
       </div>
 
-      <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         {/* Mode-specific header */}
         {header}
 
+        {/* Turn indicator banner */}
+        <div
+          role="status"
+          aria-live="polite"
+          className={`text-center py-2 text-sm font-semibold transition-colors ${
+            isMyTurn
+              ? "bg-emerald-500/20 text-emerald-400 animate-pulse"
+              : "bg-slate-800/50 text-slate-400"
+          }`}
+        >
+          {isMyTurn ? "Your Turn — Play a card" : `Waiting for ${gameState.players[gameState.currentPlayerIndex]?.name}...`}
+        </div>
+
         {/* Main content */}
-        <main className="flex-1 flex flex-col items-center p-4 gap-4">
+        <main className="flex-1 flex flex-col p-4 gap-4">
           {/* Mode-specific opponents info */}
           {opponentsInfo}
 
           {/* Board */}
-          <div className="w-full max-w-6xl flex-1">
-            <div className="grid grid-cols-4 gap-4 h-full">
+          <div className="flex-1 w-full max-w-7xl mx-auto" role="region" aria-label="Game board">
+            <div className="grid grid-cols-4 gap-3 h-full">
               {SUITS_ORDER.map((suit) => {
                 const sequence = gameState.board[suit];
-                const lowCards: number[] = [];
-                const highCards: number[] = [];
+                const isOpen = sequence.low !== null && sequence.high !== null;
+                const cardCount = isOpen ? sequence.high! - sequence.low! + 1 : 0;
 
-                if (sequence.low !== null && sequence.high !== null) {
-                  for (let rank = sequence.low; rank <= sequence.high; rank++) {
-                    if (rank >= 7) {
-                      highCards.push(rank);
-                    } else {
-                      lowCards.push(rank);
-                    }
+                // Show all cards in the run (low to high)
+                const displayCards: number[] = [];
+                if (isOpen) {
+                  for (let r = sequence.low!; r <= sequence.high!; r++) {
+                    displayCards.push(r);
                   }
                 }
 
                 return (
                   <div
                     key={suit}
-                    className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-xl p-4 min-h-100 flex flex-col"
+                    role="region"
+                    aria-label={`${getSuitDisplayName(suit)} — ${isOpen ? `${cardCount} cards played` : "not started"}`}
+                    className={`rounded-xl p-3 flex flex-col transition-all ${
+                      isOpen
+                        ? "bg-slate-800/60 border border-slate-700"
+                        : "bg-slate-800/30 border border-slate-800 border-dashed"
+                    }`}
                   >
-                    <h3 className="text-center font-semibold mb-3 text-slate-700 dark:text-slate-300">
-                      {getSuitDisplayName(suit)}
-                    </h3>
-                    <div className="flex-1 flex flex-col items-center justify-end py-2 overflow-y-auto">
-                      {highCards.length === 0 && lowCards.length === 0 ? (
-                        <div className="text-sm text-slate-500 dark:text-slate-500 italic text-center flex-1 flex items-center">
-                          Play a 7 to start
+                    {/* Suit header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-2xl ${SUIT_COLORS[suit]}`}>
+                          {SUIT_SYMBOLS[suit]}
+                        </span>
+                        <span className="font-semibold text-slate-300 text-sm">
+                          {getSuitDisplayName(suit)}
+                        </span>
+                      </div>
+                      {isOpen && (
+                        <span className="text-xs text-slate-500 bg-slate-700/50 px-2 py-0.5 rounded-full">
+                          {cardCount} cards
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Card display area */}
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                      {!isOpen ? (
+                        <div className="text-sm text-slate-600 italic">
+                          Play 7{SUIT_SYMBOLS[suit]} to open
                         </div>
                       ) : (
-                        <div
-                          className="relative flex items-end justify-center"
-                          style={{
-                            minHeight: `${Math.max(
-                              (lowCards.length + highCards.length) * 20 + 100,
-                              120
-                            )}px`,
+                        <div className="flex flex-col items-center gap-2 w-full">
+                          {/* Visual card stack showing full run */}
+                          <div className="relative flex items-end justify-center" style={{
+                            minHeight: `${displayCards.length * 14 + 70}px`,
                             width: "100%",
-                          }}
-                        >
-                          {lowCards.map((rank, idx) => (
-                            <div
-                              key={`${suit}-${rank}`}
-                              className="absolute"
-                              style={{
-                                bottom: `${idx * 20}px`,
-                                zIndex: idx,
-                              }}
-                            >
-                              <Card suit={SUIT_NAMES[suit]} rank={rank} size="small" />
-                            </div>
-                          ))}
-                          {highCards.map((rank, idx) => (
-                            <div
-                              key={`${suit}-${rank}`}
-                              className="absolute"
-                              style={{
-                                bottom: `${(lowCards.length + idx) * 20}px`,
-                                zIndex: lowCards.length + idx,
-                              }}
-                            >
-                              <Card suit={SUIT_NAMES[suit]} rank={rank} size="small" />
-                            </div>
-                          ))}
+                          }}>
+                            {displayCards.map((rank, idx) => (
+                              <div
+                                key={`${suit}-${rank}`}
+                                className="absolute left-1/2 -translate-x-1/2"
+                                style={{
+                                  bottom: `${idx * 14}px`,
+                                  zIndex: idx,
+                                }}
+                              >
+                                <Card suit={SUIT_NAMES[suit]} rank={rank} size="small" />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -304,31 +351,66 @@ export function GameBoard({
         </main>
 
         {/* Player Hand — fixed to bottom */}
-        <div className="w-full border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto p-4">
+        <div className="w-full border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-md" role="region" aria-label={`Your hand — ${myHand.length} cards`}>
+          <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Your Hand ({myHand.length} cards)
+              <p className="text-sm font-medium text-slate-400">
+                Your Hand
+                <span className="ml-2 text-xs bg-slate-700/50 text-slate-400 px-2 py-0.5 rounded-full">
+                  {myHand.length} cards
+                </span>
               </p>
               <button
                 onClick={handleCannotPlayClick}
                 disabled={!isMyTurn}
-                className="px-3 py-1.5 text-sm font-medium border border-slate-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Cannot play — pass turn and give a card"
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
+                  isMyTurn
+                    ? "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                    : "bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed"
+                }`}
               >
-                Can't Play
+                {"Can't Play"}
               </button>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
-              {myHand.map((card: ICard, index: number) => (
-                <div key={`${card.suit}-${card.rank}-${index}`} className="flex-shrink-0">
-                  <Card
-                    suit={SUIT_NAMES[card.suit as Suit]}
-                    rank={card.rank}
-                    size="small"
-                    isValid={isCardValid(card)}
-                    disabled={!isMyTurn}
-                    onClick={() => handleCardClick(card)}
-                  />
+
+            {/* Card hand — grouped by suit with overlap */}
+            <div className="flex gap-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
+              {handBySuit.map(({ suit, cards }, groupIdx) => (
+                <div key={suit} className={`flex-shrink-0 ${groupIdx > 0 ? "border-l border-slate-700/50 pl-6" : ""}`}>
+                  {/* Suit label */}
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className={`text-xs ${SUIT_COLORS[suit]}`}>
+                      {SUIT_SYMBOLS[suit]}
+                    </span>
+                    <span className="text-[10px] text-slate-600 uppercase tracking-wider">
+                      {getSuitDisplayName(suit)}
+                    </span>
+                  </div>
+                  {/* Overlapping cards */}
+                  <div className="flex" style={{ marginRight: `${Math.max(0, (cards.length - 1)) * -16}px` }}>
+                    {cards.map((card: ICard, index: number) => (
+                      <div
+                        key={`${card.suit}-${card.rank}`}
+                        className={`flex-shrink-0 transition-transform hover:!-translate-y-2 hover:!z-50 ${
+                          playedCardKey === `${card.suit}-${card.rank}` ? "animate-card-played" : ""
+                        }`}
+                        style={{
+                          marginLeft: index === 0 ? 0 : -16,
+                          zIndex: index,
+                        }}
+                      >
+                        <Card
+                          suit={SUIT_NAMES[card.suit as Suit]}
+                          rank={card.rank}
+                          size="small"
+                          isValid={isCardValid(card)}
+                          disabled={!isMyTurn}
+                          onClick={() => handleCardClick(card)}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

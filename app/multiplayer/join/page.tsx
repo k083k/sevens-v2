@@ -63,11 +63,11 @@ function JoinGameContent() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-600/10 dark:to-teal-700/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-400/20 to-cyan-500/20 dark:from-blue-600/10 dark:to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-emerald-600/10 to-teal-700/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-cyan-700/10 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
 
       {/* Back button */}
@@ -86,10 +86,10 @@ function JoinGameContent() {
           className="flex flex-col items-center gap-8 w-full"
         >
           <div className="text-center space-y-2">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent">
               Join Game
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
+            <p className="text-lg text-slate-400">
               Enter the game code to join your friends
             </p>
           </div>
@@ -99,9 +99,9 @@ function JoinGameContent() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
-            <label htmlFor="playerName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="playerName" className="block text-sm font-medium text-slate-300 mb-2">
               Your Name
             </label>
             <input
@@ -111,7 +111,7 @@ function JoinGameContent() {
               onChange={(e) => setPlayerName(e.target.value)}
               placeholder="Enter your name"
               maxLength={20}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-lg"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-lg text-white placeholder-slate-500"
               disabled={isJoining}
             />
           </motion.div>
@@ -121,9 +121,9 @@ function JoinGameContent() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="w-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg"
+            className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-lg"
           >
-            <label htmlFor="gameCode" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="gameCode" className="block text-sm font-medium text-slate-300 mb-2">
               Game Code
             </label>
             <input
@@ -137,14 +137,14 @@ function JoinGameContent() {
                 }
               }}
               placeholder="ABC DEF"
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-2xl font-mono text-center tracking-wider"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-2xl font-mono text-center tracking-wider text-white placeholder-slate-500"
               disabled={isJoining}
             />
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 text-center">
+            <p className="mt-2 text-xs text-slate-400 text-center">
               Enter the 6-character code from your friend
             </p>
             {error && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400 text-center">
+              <p className="mt-2 text-sm text-red-400 text-center">
                 {error}
               </p>
             )}

@@ -11,7 +11,6 @@ interface CardProps {
 }
 
 export function Card({ suit, rank, isValid = false, disabled = false, onClick, size = "medium" }: CardProps) {
-  // Convert suit name from plural to singular for image filename
   const suitMap: Record<string, string> = {
     hearts: "heart",
     diamonds: "diamond",
@@ -19,7 +18,6 @@ export function Card({ suit, rank, isValid = false, disabled = false, onClick, s
     spades: "spade",
   };
 
-  // Convert rank to image filename format
   const rankMap: Record<string, string> = {
     "1": "1",
     "11": "jack",
@@ -42,20 +40,21 @@ export function Card({ suit, rank, isValid = false, disabled = false, onClick, s
     <button
       onClick={onClick}
       disabled={disabled || !onClick}
+      aria-label={`${rank} of ${suit}${isValid ? " — valid move" : ""}`}
       className={cn(
-        "relative rounded-lg shadow-lg transition-all duration-200 overflow-hidden",
+        "relative rounded-lg shadow-lg transition-all duration-200 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
         isValid && !disabled
-          ? "ring-4 ring-emerald-400 ring-offset-2 hover:scale-105 cursor-pointer"
+          ? "ring-4 ring-emerald-400 ring-offset-1 ring-offset-slate-900 hover:scale-105 active:scale-95 cursor-pointer animate-valid-pulse"
           : "",
-        disabled && "opacity-50 cursor-not-allowed",
-        !disabled && onClick && !isValid && "hover:scale-105 hover:shadow-xl cursor-pointer"
+        disabled && "opacity-60 cursor-not-allowed",
+        !disabled && onClick && !isValid && "hover:scale-105 active:scale-95 hover:shadow-xl cursor-pointer"
       )}
       style={{
         width: sizeClasses[size].width,
         height: sizeClasses[size].height,
         boxShadow: isValid
-          ? "0 10px 40px rgba(16, 185, 129, 0.3), 0 2px 8px rgba(0,0,0,0.1)"
-          : "0 4px 12px rgba(0,0,0,0.1)",
+          ? "0 10px 40px rgba(16, 185, 129, 0.4), 0 2px 8px rgba(0,0,0,0.2)"
+          : "0 4px 12px rgba(0,0,0,0.3)",
       }}
     >
       <Image
@@ -69,7 +68,7 @@ export function Card({ suit, rank, isValid = false, disabled = false, onClick, s
 
       {/* Valid card glow overlay */}
       {isValid && !disabled && (
-        <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-emerald-500/15 pointer-events-none" />
       )}
     </button>
   );

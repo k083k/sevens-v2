@@ -112,10 +112,34 @@
 ## Phase 5: UI/UX Polish (Future)
 > After architecture is solid, revisit the interface.
 
-### 5.1 — UI Component Audit `[ NOT STARTED ]`
-### 5.2 — Responsive Design Review `[ NOT STARTED ]`
-### 5.3 — Accessibility Audit `[ NOT STARTED ]`
-### 5.4 — Performance Optimization `[ NOT STARTED ]`
+### 5.1 — Game Board Redesign `[ DONE ]`
+- Board fills more of the viewport, larger cards
+- Better turn indicator (prominent, animated)
+- Improved opponent display (not just a text pill)
+- Sort player hand by suit then rank
+- Overlap cards in hand like a real fan
+
+### 5.2 — Card Hand UX `[ DONE ]`
+- Cards grouped by suit, sorted by rank within suit
+- Overlapping fan layout instead of spaced row
+- Larger card size in hand
+
+### 5.3 — Polish Form Pages `[ DONE ]`
+- Converted all pages to consistent dark theme (no more light/dark dual styling)
+- Landing, Setup, Multiplayer Setup, Create, Join, Lobby all unified
+
+### 5.4 — Micro-interactions `[ DONE ]`
+- Card play animation (scale + fade out when played)
+- Valid card pulse glow animation
+- Press feedback (active:scale-95) on cards
+- Toasts, GameOver modal, CardTransfer modal, EndGame modal all dark themed
+- Toast slide-in/out animations preserved
+
+### 5.5 — Accessibility `[ DONE ]`
+- ARIA labels on cards ("7 of hearts — valid move"), board regions, hand area
+- Turn indicator uses role="status" aria-live="polite" for screen readers
+- Keyboard focus indicators (sky-400 ring) on cards and buttons
+- Can't Play button has descriptive aria-label
 
 ---
 
@@ -127,7 +151,7 @@
 | Phase 2 | DONE | Unify duplicated code |
 | Phase 3 | DONE | Leverage Next.js server features |
 | Phase 4 | DONE | Code quality & maintainability |
-| Phase 5 | NOT STARTED | UI/UX polish (future) |
+| Phase 5 | DONE | UI/UX polish |
 
 ---
 
