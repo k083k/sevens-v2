@@ -65,18 +65,18 @@
 ## Phase 3: Leverage Next.js Server Features
 > Use the framework properly — server components for static/read pages, client components only where needed.
 
-### 3.1 — Convert Static Pages to Server Components `[ NOT STARTED ]`
-- `app/page.tsx` (landing) — evaluate if it can be a server component (animations may require client)
-- `app/setup/page.tsx` — navigation page, could be server component with client islands
-- `app/multiplayer/setup/page.tsx` — same, mostly navigation
+### 3.1 — Convert Static Pages to Server Components `[ SKIPPED ]`
+- All navigation pages (landing, setup, multiplayer setup) rely heavily on framer-motion
+  animations and interactive state. Converting them would wrap nearly everything in client
+  islands for no real benefit. These pages are small and fast already.
 
-### 3.2 — Server Component + Client Island Pattern `[ NOT STARTED ]`
+### 3.2 — Server Component + Client Island Pattern `[ DONE ]`
 - For pages like the lobby (`app/multiplayer/lobby/[gameId]/page.tsx`):
   - Server component fetches initial game data
   - Client component handles realtime updates
   - Pass initial data as props to avoid loading spinners
 
-### 3.3 — Loading & Error States `[ NOT STARTED ]`
+### 3.3 — Loading & Error States `[ DONE ]`
 - Add `loading.tsx` files for route segments that fetch data
 - Add `error.tsx` error boundaries for graceful failure handling
 - Add `not-found.tsx` for invalid game codes / IDs
@@ -122,7 +122,7 @@
 |-------|--------|-------------|
 | Phase 1 | DONE | Server-side security & API layer |
 | Phase 2 | DONE | Unify duplicated code |
-| Phase 3 | NOT STARTED | Leverage Next.js server features |
+| Phase 3 | DONE | Leverage Next.js server features |
 | Phase 4 | NOT STARTED | Code quality & maintainability |
 | Phase 5 | NOT STARTED | UI/UX polish (future) |
 
