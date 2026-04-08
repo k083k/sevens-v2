@@ -14,7 +14,7 @@ import { GameOverModal } from "@/components/game/GameOverModal";
 import { ToastContainer } from "@/components/game/Toast";
 import { EndGameModal } from "@/components/multiplayer/EndGameModal";
 import { supabase } from "@/lib/supabase/client";
-import { cancelGame } from "@/lib/multiplayer/lobby";
+import { cancelGame } from "@/lib/actions/lobby-actions";
 
 export default function MultiplayerGamePage() {
   const router = useRouter();
@@ -170,7 +170,7 @@ export default function MultiplayerGamePage() {
       addToast("Game ended by host", "info");
       router.push("/");
     } else {
-      addToast(result.error || "Failed to end game", "warning");
+      addToast('error' in result ? result.error : "Failed to end game", "warning");
     }
   };
 

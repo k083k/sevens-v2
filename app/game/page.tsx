@@ -353,17 +353,18 @@ function GamePageContent() {
               Your Hand ({humanHand.length} cards)
             </p>
           </div>
-          <div className="flex gap-2 justify-center flex-wrap">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
             {humanHand.map((card: any, index: number) => (
-              <Card
-                key={`${card.suit}-${card.rank}-${index}`}
-                suit={suitNames[card.suit as Suit] as "hearts" | "diamonds" | "clubs" | "spades"}
-                rank={card.rank}
-                size="small"
-                isValid={isCardValid(card)}
-                disabled={!isHumanTurn}
-                onClick={() => handleCardClick(card)}
-              />
+              <div key={`${card.suit}-${card.rank}-${index}`} className="flex-shrink-0">
+                <Card
+                  suit={suitNames[card.suit as Suit] as "hearts" | "diamonds" | "clubs" | "spades"}
+                  rank={card.rank}
+                  size="small"
+                  isValid={isCardValid(card)}
+                  disabled={!isHumanTurn}
+                  onClick={() => handleCardClick(card)}
+                />
+              </div>
             ))}
           </div>
         </div>

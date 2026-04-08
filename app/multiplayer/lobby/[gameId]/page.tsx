@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Copy, Check, Users as UsersIcon, Crown, Loader2, Play } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import { getGameByCode, getGamePlayers, leaveGame, startGame } from "@/lib/multiplayer/lobby";
+import { getGamePlayers, leaveGame, startGame } from "@/lib/actions/lobby-actions";
 import { formatGameCode } from "@/lib/multiplayer/gameCode";
 
 interface Player {
@@ -144,7 +144,7 @@ export default function LobbyPage() {
 
   const handleLeave = async () => {
     if (playerId) {
-      await leaveGame(gameId, playerId);
+      const result = await leaveGame(gameId, playerId);
       router.push("/");
     }
   };
@@ -156,7 +156,7 @@ export default function LobbyPage() {
     const result = await startGame(gameId, playerId);
 
     if (!result.success) {
-      alert(result.error);
+      alert('error' in result ? result.error : 'Failed to start game');
       setIsStarting(false);
     }
     // If successful, the realtime subscription will navigate us
