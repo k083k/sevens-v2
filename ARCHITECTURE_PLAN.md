@@ -44,18 +44,18 @@
 ## Phase 2: Unify Duplicated Code
 > Eliminate the split between single-player and multiplayer where it doesn't need to exist.
 
-### 2.1 — Shared Game Board Component `[ NOT STARTED ]`
+### 2.1 — Shared Game Board Component `[ DONE ]`
 - Extract common game board UI from `app/game/page.tsx` and `app/multiplayer/game/[gameId]/page.tsx`
 - Create `components/game/GameBoard.tsx` that accepts props/callbacks for both modes
 - Each page becomes a thin wrapper that provides mode-specific data
 
-### 2.2 — Unified Game Store `[ NOT STARTED ]`
-- Merge `gameStore.ts` and `multiplayerStore.ts` into one store
-- Add a `mode: 'single' | 'multiplayer'` flag
-- Shared logic stays shared; mode-specific logic branches on the flag
-- Single-player actions stay local; multiplayer actions call server actions
+### 2.2 — Unified Game Store `[ SKIPPED ]`
+- After analysis: single-player store is synchronous (local Game class), multiplayer store
+  is async (server actions). Merging would add branching complexity without real benefit.
+- The UI duplication is already solved by the shared GameBoard component (2.1).
+- Each store is small and focused. Keeping them separate is cleaner.
 
-### 2.3 — Shared Types & Contracts `[ NOT STARTED ]`
+### 2.3 — Shared Types & Contracts `[ DONE ]`
 - Audit `lib/game/types/types.ts` — ensure all shared types are well-defined
 - Create clear interfaces for server action inputs/outputs
 - Ensure the `GameState` that flows over the wire is well-typed and minimal (don't send other players' hands to the client)
@@ -121,7 +121,7 @@
 | Phase | Status | Description |
 |-------|--------|-------------|
 | Phase 1 | DONE | Server-side security & API layer |
-| Phase 2 | NOT STARTED | Unify duplicated code |
+| Phase 2 | DONE | Unify duplicated code |
 | Phase 3 | NOT STARTED | Leverage Next.js server features |
 | Phase 4 | NOT STARTED | Code quality & maintainability |
 | Phase 5 | NOT STARTED | UI/UX polish (future) |
