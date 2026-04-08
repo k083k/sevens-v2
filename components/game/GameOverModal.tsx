@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Trophy, Medal, Home, RotateCcw } from "lucide-react";
+import { Trophy, Medal, Home, RotateCcw, Swords } from "lucide-react";
 import { motion } from "framer-motion";
 import { IPlayer } from "@/lib/game/types/types";
+import { useSound } from "@/lib/sounds/useSound";
 
 interface GameOverModalProps {
   visible: boolean;
@@ -118,12 +119,14 @@ export function GameOverModal({
             className="flex gap-3"
           >
             <Button
-              onClick={onPlayAgain}
-              className="flex-1"
+              onClick={() => {
+                onPlayAgain();
+              }}
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
               size="lg"
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Play Again
+              <Swords className="mr-2 h-4 w-4" />
+              Rematch
             </Button>
             <Button
               onClick={onBackToMenu}

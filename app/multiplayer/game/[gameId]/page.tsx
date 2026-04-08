@@ -2,12 +2,13 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, X } from "lucide-react";
+import { ArrowLeft, Users, X, Eye } from "lucide-react";
 import { useMultiplayerStore } from "@/lib/store/multiplayerStore";
 import { GameBoard } from "@/components/game/GameBoard";
+import { DealingAnimation } from "@/components/game/DealingAnimation";
 import { GameMode } from "@/lib/game/types/types";
 import { EndGameModal } from "@/components/multiplayer/EndGameModal";
 import { supabase } from "@/lib/supabase/client";
@@ -35,6 +36,20 @@ export default function MultiplayerGamePage() {
   const [isHost, setIsHost] = useState(false);
   const [showEndGameModal, setShowEndGameModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isDealing, setIsDealing] = useState(true);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopySpectateLink = () => {
+    const url = `${window.location.origin}/multiplayer/spectate/${gameId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    });
+  };
+
+  const handleDealingComplete = useCallback(() => {
+    setIsDealing(false);
+  }, []);
 
   // Initialize game on mount
   useEffect(() => {
@@ -108,7 +123,17 @@ export default function MultiplayerGamePage() {
     }
   };
 
-  if (loading || !gameState) {
+  if (loading || !gameState || isDealing) {
+    if (!loading && gameState && isDealing) {
+      return (
+        <DealingAnimation
+          playerCount={gameState.players.length}
+          playerNames={gameState.players.map((p) => p.id === playerId ? "You" : p.name)}
+          onComplete={handleDealingComplete}
+        />
+      );
+    }
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="text-center">
@@ -162,11 +187,22 @@ export default function MultiplayerGamePage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-800/50 rounded-lg">
-                <Users className="h-4 w-4 text-slate-400" />
-                <span className="text-sm font-medium text-slate-300">
-                  {gameState.players.length} Players
-                </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopySpectateLink}
+                  className="text-slate-400 hover:text-amber-400 hover:bg-amber-500/10"
+                >
+                  <Eye className="mr-1.5 h-3.5 w-3.5" />
+                  {copiedLink ? "Copied!" : "Spectate Link"}
+                </Button>
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-800/50 rounded-lg">
+                  <Users className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-300">
+                    {gameState.players.length} Players
+                  </span>
+                </div>
               </div>
             </div>
           </div>
