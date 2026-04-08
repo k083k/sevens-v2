@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Play, Zap, Trophy, BookOpen } from "lucide-react";
+import { Play, Zap, Trophy, BookOpen, BarChart3 } from "lucide-react";
 
 // Playing card component with enhanced design
 const PlayingCard = ({ suit, rank, delay = 0, position }: { suit: string; rank: string; delay?: number; position: { top?: string; bottom?: string; left?: string; right?: string } }) => {
@@ -156,11 +156,12 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          {/* How to Play link */}
+          {/* Secondary nav links */}
           <motion.div
             initial={mounted ? { opacity: 0 } : false}
             animate={mounted ? { opacity: 1 } : {}}
             transition={{ delay: 0.9, duration: 0.6 }}
+            className="flex gap-3"
           >
             <Link href="/how-to-play">
               <Button
@@ -170,6 +171,16 @@ export default function Home() {
               >
                 <BookOpen className="mr-2 h-5 w-5" />
                 How to Play
+              </Button>
+            </Link>
+            <Link href="/stats">
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-base px-8 py-6 border-slate-600 bg-slate-800/60 backdrop-blur-sm text-slate-200 hover:bg-slate-700/80 hover:text-white hover:border-slate-500 transition-all duration-300 shadow-lg"
+              >
+                <BarChart3 className="mr-2 h-5 w-5" />
+                Stats
               </Button>
             </Link>
           </motion.div>

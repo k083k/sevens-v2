@@ -7,12 +7,13 @@
  * Mode-specific behavior (AI turns, server actions, etc.) lives in the parent pages.
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "./Card";
 import { CardTransferModal } from "./CardTransferModal";
 import { GameOverModal } from "./GameOverModal";
 import { ToastContainer } from "./Toast";
 import { Suit, ICard, IPlayer, GameState } from "@/lib/game/types/types";
+import { useSound } from "@/lib/sounds/useSound";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -116,6 +117,34 @@ export function GameBoard({
   const [forceShowValid, setForceShowValid] = useState(false);
   const [playedCardKey, setPlayedCardKey] = useState<string | null>(null);
 
+  const { play: playSound, init: initSound, muted, toggleMute } = useSound();
+  const prevTurnRef = useRef(isMyTurn);
+  const prevPhaseRef = useRef(gameState.gamePhase);
+
+  // Initialize audio on first click anywhere
+  useEffect(() => {
+    const handler = () => { initSound(); window.removeEventListener("pointerdown", handler); };
+    window.addEventListener("pointerdown", handler);
+    return () => window.removeEventListener("pointerdown", handler);
+  }, [initSound]);
+
+  // Sound when it becomes your turn
+  useEffect(() => {
+    if (isMyTurn && !prevTurnRef.current) {
+      playSound("turnNotify");
+    }
+    prevTurnRef.current = isMyTurn;
+  }, [isMyTurn, playSound]);
+
+  // Sound on game over
+  useEffect(() => {
+    if (gameState.gamePhase === "finished" && prevPhaseRef.current !== "finished") {
+      const isWinner = gameState.rankings[0] === myPlayer.id;
+      playSound(isWinner ? "win" : "lose");
+    }
+    prevPhaseRef.current = gameState.gamePhase;
+  }, [gameState.gamePhase, gameState.rankings, myPlayer.id, playSound]);
+
   const myHand = sortHand(myPlayer.getHand());
 
   // ── Toast helpers ──
@@ -151,6 +180,7 @@ export function GameBoard({
 
     try {
       onPlayCard(card);
+      playSound("cardPlay");
       setPlayedCardKey(`${card.suit}-${card.rank}`);
       setTimeout(() => setPlayedCardKey(null), 400);
       setInvalidClickCount(0);
@@ -180,6 +210,7 @@ export function GameBoard({
         addToast(`${cardName} can't be played right now.`, "warning");
       }
 
+      playSound("invalidMove");
       const newCount = invalidClickCount + 1;
       setInvalidClickCount(newCount);
       if (newCount >= 3) {
@@ -199,6 +230,7 @@ export function GameBoard({
 
     try {
       onCannotPlay();
+      playSound("cantPlay");
     } catch (error: any) {
       const msg = error.message || error.toString();
       if (msg.includes("has valid moves")) {
@@ -215,6 +247,7 @@ export function GameBoard({
   const handleCardTransfer = (card: ICard) => {
     try {
       onCardTransfer(card);
+      playSound("cardTransfer");
       addToast("Card transferred!", "success");
     } catch (error: any) {
       addToast(error.message || "Error transferring card", "warning");
@@ -254,13 +287,26 @@ export function GameBoard({
         <div
           role="status"
           aria-live="polite"
-          className={`text-center py-2 text-sm font-semibold transition-colors ${
+          className={`relative flex items-center justify-center py-2 text-sm font-semibold transition-colors ${
             isMyTurn
               ? "bg-emerald-500/20 text-emerald-400 animate-pulse"
               : "bg-slate-800/50 text-slate-400"
           }`}
         >
-          {isMyTurn ? "Your Turn — Play a card" : `Waiting for ${gameState.players[gameState.currentPlayerIndex]?.name}...`}
+          <span>
+            {isMyTurn ? "Your Turn — Play a card" : `Waiting for ${gameState.players[gameState.currentPlayerIndex]?.name}...`}
+          </span>
+          <button
+            onClick={toggleMute}
+            aria-label={muted ? "Unmute sounds" : "Mute sounds"}
+            className="absolute right-3 p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
+          >
+            {muted ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            )}
+          </button>
         </div>
 
         {/* Main content */}

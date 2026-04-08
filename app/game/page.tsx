@@ -1,18 +1,23 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useGameStore } from "@/lib/store/gameStore";
 import { GameBoard } from "@/components/game/GameBoard";
+import { DealingAnimation } from "@/components/game/DealingAnimation";
 import { PlayerType, GameMode } from "@/lib/game/types/types";
+import { recordGame } from "@/lib/stats/gameStats";
 
 function GamePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const mode = searchParams.get("mode") as "easy" | "hard" || "easy";
+
+  const [isDealing, setIsDealing] = useState(true);
+  const [statsRecorded, setStatsRecorded] = useState(false);
 
   const {
     gameState,
@@ -36,7 +41,30 @@ function GamePageContent() {
       mode === "easy" ? GameMode.EASY : GameMode.HARD
     );
     dealCards();
+    setIsDealing(true);
   }, [mode, initializeGame, dealCards]);
+
+  const handleDealingComplete = useCallback(() => {
+    setIsDealing(false);
+  }, []);
+
+  // Record game stats when game finishes
+  useEffect(() => {
+    if (!gameState || gameState.gamePhase !== "finished" || statsRecorded) return;
+    const human = gameState.players.find((p) => p.type === PlayerType.HUMAN);
+    if (!human) return;
+
+    const position = gameState.rankings.indexOf(human.id) + 1;
+    recordGame({
+      date: new Date().toISOString(),
+      won: position === 1,
+      mode: mode as "easy" | "hard",
+      finishPosition: position,
+      playerCount: gameState.players.length,
+      turnsPlayed: 0, // not tracked yet
+    });
+    setStatsRecorded(true);
+  }, [gameState?.gamePhase, gameState?.rankings, statsRecorded, mode]);
 
   // Process AI turns
   useEffect(() => {
@@ -86,7 +114,19 @@ function GamePageContent() {
       mode === "easy" ? GameMode.EASY : GameMode.HARD
     );
     dealCards();
+    setIsDealing(true);
+    setStatsRecorded(false);
   };
+
+  if (isDealing) {
+    return (
+      <DealingAnimation
+        playerCount={2}
+        playerNames={["You", "AI"]}
+        onComplete={handleDealingComplete}
+      />
+    );
+  }
 
   return (
     <GameBoard
